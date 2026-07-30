@@ -1,4 +1,4 @@
-﻿import base64
+import base64
 import copy
 import json
 import shutil
@@ -33,6 +33,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
@@ -57,6 +58,7 @@ from trustai.external_evidence import (
     build_external_evidence_production_replacement_owner_packet_status,
     build_external_evidence_production_replacement_intake_template,
     build_external_evidence_production_replacement_submission_review,
+    build_external_evidence_production_replacement_collection_package,
     build_external_evidence_production_replacement_closure,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
@@ -82,6 +84,7 @@ from trustai.external_evidence import (
     load_external_evidence_production_replacement_owner_packet_status,
     load_external_evidence_production_replacement_intake_template,
     load_external_evidence_production_replacement_submission_review,
+    load_external_evidence_production_replacement_collection_package,
     load_external_evidence_production_replacement_closure,
     load_external_evidence_intake,
     load_external_evidence_intakes,
@@ -104,6 +107,7 @@ from trustai.external_evidence import (
     render_external_evidence_production_replacement_owner_packet_status_markdown,
     render_external_evidence_production_replacement_intake_template_markdown,
     render_external_evidence_production_replacement_submission_review_markdown,
+    render_external_evidence_production_replacement_collection_package_markdown,
     render_external_evidence_production_replacement_closure_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
@@ -121,6 +125,7 @@ from trustai.external_evidence import (
     verify_external_evidence_production_replacement_owner_packet_status,
     verify_external_evidence_production_replacement_intake_template,
     verify_external_evidence_production_replacement_submission_review,
+    verify_external_evidence_production_replacement_collection_package,
     verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
@@ -1535,6 +1540,29 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             require_live_source_uris=True,
         )
         submission_review_markdown = render_external_evidence_production_replacement_submission_review_markdown(submission_review)
+        collection_package = build_external_evidence_production_replacement_collection_package(
+            submission_review,
+            manifest,
+            audit,
+            root=ROOT,
+            generated_at="2026-07-09T00:09:15Z",
+        )
+        collection_package_result = verify_external_evidence_production_replacement_collection_package(
+            collection_package,
+            submission_review,
+            manifest,
+            audit,
+            root=ROOT,
+        )
+        strict_collection_package_result = verify_external_evidence_production_replacement_collection_package(
+            collection_package,
+            submission_review,
+            manifest,
+            audit,
+            root=ROOT,
+            require_ready=True,
+        )
+        collection_package_markdown = render_external_evidence_production_replacement_collection_package_markdown(collection_package)
         production_closure = build_external_evidence_production_replacement_closure(
             submission_review,
             readiness,
@@ -1558,13 +1586,16 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA, owner_packet_status["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA, intake_template["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA, submission_review["schema"])
+        self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA, collection_package["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA, production_closure["schema"])
         self.assertTrue(result.ok, result.errors)
         self.assertTrue(owner_packets_result.ok, owner_packets_result.errors)
         self.assertTrue(owner_packet_status_result.ok, owner_packet_status_result.errors)
         self.assertTrue(intake_template_result.ok, intake_template_result.errors)
         self.assertTrue(submission_review_result.ok, submission_review_result.errors)
+        self.assertTrue(collection_package_result.ok, collection_package_result.errors)
         self.assertTrue(production_closure_result.ok, production_closure_result.errors)
+        self.assertFalse(strict_collection_package_result.ok)
         self.assertFalse(strict_production_closure_result.ok)
         self.assertEqual("open", replacement_plan["summary"]["replacement_status"])
         self.assertEqual(1, replacement_plan["summary"]["task_count"])
@@ -1590,6 +1621,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(0, submission_review["summary"]["live_source_uri_count"])
         self.assertEqual(1, submission_review["summary"]["source_map_entry_count"])
         self.assertFalse(submission_review["summary"]["fulfilled_source_map_verification_ok"])
+        self.assertEqual("blocked", collection_package["summary"]["collection_status"])
+        self.assertEqual(0, collection_package["summary"]["ready_task_count"])
+        self.assertEqual(1, collection_package["summary"]["blocked_task_count"])
+        self.assertEqual(1, collection_package["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(submission_review["fulfilled_source_map"], collection_package["fulfilled_source_map"])
+        self.assertIn("external-evidence-collect-batch", collection_package["commands"]["collect_batch"])
         self.assertEqual("blocked", production_closure["summary"]["closure_status"])
         self.assertEqual("not-ready", production_closure["summary"]["readiness_status"])
         self.assertEqual(0, production_closure["summary"]["closed_task_count"])
@@ -1615,6 +1652,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertIn("Requests: 1", intake_template_markdown)
         self.assertIn("External Evidence Production Replacement Submission Review", submission_review_markdown)
         self.assertIn("Blocked tasks: 1", submission_review_markdown)
+        self.assertIn("External Evidence Production Replacement Collection Package", collection_package_markdown)
+        self.assertIn("Blocked tasks: 1", collection_package_markdown)
         self.assertIn("External Evidence Production Replacement Closure", production_closure_markdown)
         self.assertIn("Closed tasks: 0/1", production_closure_markdown)
 
@@ -1641,6 +1680,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             submission_review_path = tmp_path / "replacement-submission-review.json"
             submission_review_markdown_path = tmp_path / "replacement-submission-review.md"
             fulfilled_source_map_path = tmp_path / "replacement-fulfilled-source-map.json"
+            collection_package_path = tmp_path / "replacement-collection-package.json"
+            collection_package_markdown_path = tmp_path / "replacement-collection-package.md"
+            collection_package_source_map_path = tmp_path / "replacement-package-source-map.json"
             closure_path = tmp_path / "replacement-closure.json"
             closure_markdown_path = tmp_path / "replacement-closure.md"
             plan_all_path = tmp_path / "plan-all.json"
@@ -1848,6 +1890,70 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertNotEqual(0, not_ready.returncode)
             self.assertIn("not ready to collect", not_ready.stderr)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-collection-package",
+                    str(submission_review_path),
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--generated-at",
+                    "2026-07-09T00:09:15Z",
+                    "--out",
+                    str(collection_package_path),
+                    "--markdown",
+                    str(collection_package_markdown_path),
+                    "--fulfilled-source-map-out",
+                    str(collection_package_source_map_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_collection_package = load_external_evidence_production_replacement_collection_package(collection_package_path)
+            self.assertEqual(collection_package, cli_collection_package)
+            cli_collection_package_source_map = json.loads(collection_package_source_map_path.read_text(encoding="utf-8"))
+            self.assertEqual(collection_package["fulfilled_source_map"], cli_collection_package_source_map)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-collection-package-verify",
+                    str(collection_package_path),
+                    str(submission_review_path),
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            not_ready_package = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-collection-package-verify",
+                    str(collection_package_path),
+                    str(submission_review_path),
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-ready",
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(0, not_ready_package.returncode)
+            self.assertIn("not ready to collect", not_ready_package.stderr)
+
             subprocess.run(
                 [
                     sys.executable,

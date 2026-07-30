@@ -440,6 +440,16 @@ placeholder or example source URIs MUST produce blockers; with
 has live source URIs and the fulfilled source map verifies under the requested
 snapshot options.
 
+`external-evidence-production-replacement-collection-package` emits
+`trustai.external-evidence-production-replacement-collection-package/0.1` from a
+submission review, source manifest, and roadmap audit. It is the operator handoff
+for collection: it binds the reviewed fulfilled source map, ready/blocked task
+lists, snapshot/intake output directories, and exact collection/rebuild/readiness
+commands into one canonical package. The package MAY be emitted while blocked so
+owners can inspect the remaining work, but `external-evidence-production-replacement-collection-package-verify
+--require-ready` MUST fail unless the source review is ready to collect and no
+placeholder source URIs remain.
+
 `external-evidence-production-replacement-closure` emits
 `trustai.external-evidence-production-replacement-closure/0.1` from the
 submission review and readiness report. It binds the submitted replacement task
@@ -449,9 +459,9 @@ fixtures blocked. `external-evidence-production-replacement-closure-verify
 --require-closed` MUST fail until that final production authority boundary is
 closed.
 
-A ready production replacement submission review is still not final authority
+A ready production replacement collection package is still not final authority
 evidence. Production readiness is proven only after `external-evidence-collect-batch`
-collects source snapshots from the fulfilled source map,
+collects source snapshots from the package's fulfilled source map,
 `external-evidence-manifest-from-intakes` rebuilds the manifest from verified
 intake receipts, `external-evidence-readiness-verify --require-ready` passes
 against the rebuilt sources,

@@ -37,6 +37,7 @@ EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA = "trustai.external
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-production-replacement-owner-packet-status/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA = "trustai.external-evidence-production-replacement-intake-template/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA = "trustai.external-evidence-production-replacement-submission-review/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA = "trustai.external-evidence-production-replacement-collection-package/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA = "trustai.external-evidence-production-replacement-closure/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
@@ -299,6 +300,13 @@ class ExternalEvidenceProductionReplacementIntakeTemplateVerification:
 
 @dataclass
 class ExternalEvidenceProductionReplacementSubmissionReviewVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementCollectionPackageVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -4411,6 +4419,179 @@ def verify_external_evidence_production_replacement_submission_review(
     return ExternalEvidenceProductionReplacementSubmissionReviewVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+
+
+def _external_evidence_production_replacement_collection_status(review: dict[str, Any]) -> str:
+    summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
+    if (
+        summary.get("review_status") == "ready-to-collect"
+        and int(summary.get("blocked_task_count") or 0) == 0
+        and int(summary.get("placeholder_source_uri_count") or 0) == 0
+    ):
+        return "ready-to-collect"
+    return "blocked"
+
+
+def build_external_evidence_production_replacement_collection_package(
+    review: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    snapshot_dir: str = "artifacts/external-evidence-sources",
+    intake_dir: str = "artifacts/external-evidence-intakes",
+    rebuilt_manifest_out: str = "artifacts/external-evidence-manifest-from-production-replacement.json",
+    readiness_out: str = "artifacts/external-evidence-production-readiness.json",
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if review.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA:
+        raise ValueError(f"unsupported external evidence production replacement submission review schema: {review.get('schema')}")
+    if review.get("production_replacement_submission_review_id") != content_hash(without_keys(review, "production_replacement_submission_review_id")):
+        raise ValueError("production_replacement_submission_review_id does not match canonical production replacement submission review body")
+    if manifest.get("schema") != EXTERNAL_EVIDENCE_SCHEMA:
+        raise ValueError(f"unsupported external evidence manifest schema: {manifest.get('schema')}")
+    manifest_result = verify_external_evidence_manifest(manifest, roadmap_audit, root=root)
+    if not manifest_result.ok:
+        raise ValueError("external evidence manifest is not valid for production replacement collection package: " + "; ".join(manifest_result.errors))
+
+    package_generated_at = generated_at or utc_now()
+    source_map = review.get("fulfilled_source_map") if isinstance(review.get("fulfilled_source_map"), dict) else {}
+    task_reviews = review.get("task_reviews", []) if isinstance(review.get("task_reviews"), list) else []
+    summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
+    source_map_summary = source_map.get("summary", {}) if isinstance(source_map.get("summary"), dict) else {}
+    collection_status = _external_evidence_production_replacement_collection_status(review)
+    ready_tasks = [task for task in task_reviews if isinstance(task, dict) and task.get("review_status") == "ready-to-collect"]
+    blocked_tasks = [task for task in task_reviews if isinstance(task, dict) and task.get("review_status") != "ready-to-collect"]
+    source_map_ref = {
+        "source_map_id": source_map.get("source_map_id"),
+        "source_map_hash": content_hash(source_map) if source_map else None,
+        "schema": source_map.get("schema"),
+    }
+    commands = {
+        "collect_batch": (
+            "python -m trustai external-evidence-collect-batch <package.fulfilled_source_map.json> "
+            "<source-manifest.json> <roadmap-audit.json> --root . --require-live-source-uris "
+            "--require-source-snapshot-artifacts --require-fresh-source-snapshot-artifacts"
+        ),
+        "rebuild_manifest_from_intakes": (
+            "python -m trustai external-evidence-manifest-from-intakes <plan-all.json> <source-manifest.json> "
+            f"<roadmap-audit.json> --intake-dir {intake_dir} --require-live-source-uris "
+            "--require-source-snapshot-artifacts --require-fresh-source-snapshot-artifacts "
+            f"--out {rebuilt_manifest_out}"
+        ),
+        "prove_production_ready": (
+            "python -m trustai external-evidence-readiness <gap-report.json> <rebuilt-manifest.json> "
+            "<remaining-plan.json> <source-map.json> <roadmap-audit.json> --root . --require-ready "
+            f"--out {readiness_out}"
+        ),
+        "close_replacement": (
+            "python -m trustai external-evidence-production-replacement-closure <ready-review.json> "
+            "<production-readiness.json> --require-closed"
+        ),
+    }
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA,
+        "generated_at": package_generated_at,
+        "collection_status": collection_status,
+        "sources": {
+            "production_replacement_submission_review": _external_evidence_review_source_record(
+                review,
+                "production_replacement_submission_review_id",
+                "production_replacement_submission_review_hash",
+            ),
+            "external_evidence_manifest": _external_evidence_review_source_record(manifest, "manifest_id", "manifest_hash"),
+            "roadmap_audit": _external_evidence_review_source_record(roadmap_audit, "audit_id", "audit_hash"),
+            "fulfilled_source_map": source_map_ref,
+        },
+        "options": {
+            "snapshot_dir": snapshot_dir,
+            "intake_dir": intake_dir,
+            "rebuilt_manifest_out": rebuilt_manifest_out,
+            "readiness_out": readiness_out,
+        },
+        "summary": {
+            "collection_status": collection_status,
+            "review_status": summary.get("review_status"),
+            "task_count": int(summary.get("source_map_entry_count") or len(task_reviews)),
+            "ready_task_count": len(ready_tasks),
+            "blocked_task_count": len(blocked_tasks),
+            "placeholder_source_uri_count": int(summary.get("placeholder_source_uri_count") or 0),
+            "live_source_uri_count": int(summary.get("live_source_uri_count") or 0),
+            "source_map_entry_count": int(source_map_summary.get("entry_count") or len(task_reviews)),
+            "snapshot_dir": snapshot_dir,
+            "intake_dir": intake_dir,
+        },
+        "fulfilled_source_map": source_map,
+        "tasks": task_reviews,
+        "ready_tasks": ready_tasks,
+        "blocked_tasks": blocked_tasks,
+        "commands": commands,
+        "next_actions": [
+            "Collect only after collection_status is ready-to-collect; blocked packages preserve the review work queue but must not be treated as production evidence.",
+            "Write the embedded fulfilled_source_map to disk and run collect_batch to create source snapshots and intake receipts.",
+            "Rebuild the external evidence manifest from intake receipts, regenerate readiness with --require-ready, then close the production replacement tasks.",
+        ],
+        "limitations": [
+            "This package is an operator handoff for collection; it does not collect evidence or prove production readiness by itself.",
+            "Strict verification with --require-ready fails until the underlying submission review has no placeholder source URIs or blocked tasks.",
+        ],
+    }
+    return {**body, "production_replacement_collection_package_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_collection_package(
+    package: dict[str, Any],
+    review: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    require_ready: bool = False,
+) -> ExternalEvidenceProductionReplacementCollectionPackageVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if package.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement collection package schema: {package.get('schema')}")
+    if package.get("production_replacement_collection_package_id") != content_hash(without_keys(package, "production_replacement_collection_package_id")):
+        errors.append("production_replacement_collection_package_id does not match canonical collection package body")
+    sources = package.get("sources") if isinstance(package.get("sources"), dict) else {}
+    if sources.get("production_replacement_submission_review") != _external_evidence_review_source_record(
+        review,
+        "production_replacement_submission_review_id",
+        "production_replacement_submission_review_hash",
+    ):
+        errors.append("production replacement collection package source review does not match supplied review")
+    if sources.get("external_evidence_manifest") != _external_evidence_review_source_record(manifest, "manifest_id", "manifest_hash"):
+        errors.append("production replacement collection package source manifest does not match supplied manifest")
+    if sources.get("roadmap_audit") != _external_evidence_review_source_record(roadmap_audit, "audit_id", "audit_hash"):
+        errors.append("production replacement collection package source roadmap audit does not match supplied roadmap audit")
+    options = package.get("options") if isinstance(package.get("options"), dict) else {}
+    try:
+        expected = build_external_evidence_production_replacement_collection_package(
+            review,
+            manifest,
+            roadmap_audit,
+            root=root,
+            snapshot_dir=str(options.get("snapshot_dir") or "artifacts/external-evidence-sources"),
+            intake_dir=str(options.get("intake_dir") or "artifacts/external-evidence-intakes"),
+            rebuilt_manifest_out=str(options.get("rebuilt_manifest_out") or "artifacts/external-evidence-manifest-from-production-replacement.json"),
+            readiness_out=str(options.get("readiness_out") or "artifacts/external-evidence-production-readiness.json"),
+            generated_at=str(package.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(package, "production_replacement_collection_package_id") != without_keys(expected, "production_replacement_collection_package_id"):
+            errors.append("production replacement collection package body does not match supplied review, manifest, and roadmap audit")
+    summary = package.get("summary", {}) if isinstance(package.get("summary"), dict) else {}
+    if summary.get("collection_status") != "ready-to-collect":
+        warnings.append("production replacement collection package is not ready to collect")
+    if summary.get("placeholder_source_uri_count"):
+        warnings.append(f"production replacement collection package contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+    if require_ready and summary.get("collection_status") != "ready-to-collect":
+        errors.append("production replacement collection package is not ready to collect")
+    return ExternalEvidenceProductionReplacementCollectionPackageVerification(ok=not errors, errors=errors, warnings=warnings)
+
 def _external_evidence_production_replacement_closure_source_errors(
     review: dict[str, Any],
     readiness: dict[str, Any],
@@ -6118,6 +6299,22 @@ def write_external_evidence_production_replacement_submission_review_markdown(pa
     target.write_text(render_external_evidence_production_replacement_submission_review_markdown(review), encoding="utf-8")
 
 
+def write_external_evidence_production_replacement_collection_package(path: str | Path, package: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(package, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_collection_package(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_collection_package_markdown(path: str | Path, package: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_collection_package_markdown(package), encoding="utf-8")
+
+
 def write_external_evidence_production_replacement_closure(path: str | Path, closure: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -7136,6 +7333,70 @@ Status filter: {plan.get('status_filter', '')}
 |---|---|---|---|---|---|---|---|
 {task_rows or "| - | - | - | - | - | - | - | - |"}
 """
+
+
+
+def render_external_evidence_production_replacement_collection_package_markdown(package: dict[str, Any]) -> str:
+    summary = package.get("summary", {}) if isinstance(package.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Collection Package",
+        "",
+        f"- Package ID: `{package.get('production_replacement_collection_package_id')}`",
+        f"- Generated at: `{package.get('generated_at')}`",
+        f"- Status: `{summary.get('collection_status')}`",
+        f"- Review status: `{summary.get('review_status')}`",
+        f"- Ready tasks: {summary.get('ready_task_count', 0)}",
+        f"- Blocked tasks: {summary.get('blocked_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Live source URIs: {summary.get('live_source_uri_count', 0)}",
+        f"- Snapshot directory: `{summary.get('snapshot_dir')}`",
+        f"- Intake directory: `{summary.get('intake_dir')}`",
+        "",
+        "## Tasks",
+        "",
+        "| Task | Owner | Authority | Source URI Status | Review Status | Snapshot | Intake |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    tasks = package.get("tasks", [])
+    if isinstance(tasks, list):
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(task.get('task'))}`",
+                        _markdown_cell(task.get("owner_hint")),
+                        f"`{_markdown_cell(task.get('authority_kind'))}`",
+                        _markdown_cell(task.get("source_uri_status")),
+                        _markdown_cell(task.get("review_status")),
+                        _markdown_cell(task.get("snapshot_out")),
+                        _markdown_cell(task.get("intake_out")),
+                    ]
+                )
+                + " |"
+            )
+    commands = package.get("commands", {}) if isinstance(package.get("commands"), dict) else {}
+    lines.extend(["", "## Commands", ""])
+    if commands:
+        for key, command in commands.items():
+            lines.append(f"- {key}: `{_markdown_cell(command)}`")
+    else:
+        lines.append("- None")
+    next_actions = package.get("next_actions", [])
+    lines.extend(["", "## Next Actions", ""])
+    if isinstance(next_actions, list) and next_actions:
+        lines.extend(f"- {_markdown_cell(action)}" for action in next_actions)
+    else:
+        lines.append("- None")
+    limitations = package.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
 
 def render_external_evidence_production_replacement_closure_markdown(closure: dict[str, Any]) -> str:
     summary = closure.get("summary", {}) if isinstance(closure.get("summary"), dict) else {}

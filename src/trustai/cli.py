@@ -1200,6 +1200,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_owner_packet_status,
     build_external_evidence_production_replacement_intake_template,
     build_external_evidence_production_replacement_submission_review,
+    build_external_evidence_production_replacement_collection_package,
     build_external_evidence_production_replacement_closure,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
@@ -1228,6 +1229,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_owner_packet_status,
     load_external_evidence_production_replacement_intake_template,
     load_external_evidence_production_replacement_submission_review,
+    load_external_evidence_production_replacement_collection_package,
     load_external_evidence_production_replacement_closure,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
@@ -1255,6 +1257,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_owner_packet_status,
     verify_external_evidence_production_replacement_intake_template,
     verify_external_evidence_production_replacement_submission_review,
+    verify_external_evidence_production_replacement_collection_package,
     verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
@@ -1291,6 +1294,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_intake_template_markdown,
     write_external_evidence_production_replacement_submission_review,
     write_external_evidence_production_replacement_submission_review_markdown,
+    write_external_evidence_production_replacement_collection_package,
+    write_external_evidence_production_replacement_collection_package_markdown,
     write_external_evidence_production_replacement_closure,
     write_external_evidence_production_replacement_closure_markdown,
     write_external_evidence_collection_plan,
@@ -17245,6 +17250,93 @@ def cmd_external_evidence_production_replacement_submission_review_verify(args: 
     return 1
 
 
+
+
+def cmd_external_evidence_production_replacement_collection_package(args: argparse.Namespace) -> int:
+    try:
+        review = load_external_evidence_production_replacement_submission_review(args.review)
+        manifest = load_external_evidence_manifest(args.manifest)
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        package = build_external_evidence_production_replacement_collection_package(
+            review,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            snapshot_dir=args.snapshot_dir,
+            intake_dir=args.intake_dir,
+            rebuilt_manifest_out=args.rebuilt_manifest_out,
+            readiness_out=args.readiness_out,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_collection_package(
+            package,
+            review,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            require_ready=args.require_ready,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement collection package failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement collection package verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_collection_package(args.out, package)
+    if args.markdown:
+        write_external_evidence_production_replacement_collection_package_markdown(args.markdown, package)
+        print(f"external evidence production replacement collection package markdown: {args.markdown}")
+    if args.fulfilled_source_map_out:
+        target = Path(args.fulfilled_source_map_out)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(package["fulfilled_source_map"], indent=2, sort_keys=True), encoding="utf-8")
+        print(f"external evidence production replacement package fulfilled source map: {args.fulfilled_source_map_out}")
+    summary = package["summary"]
+    print(f"external evidence production replacement collection package: {args.out}")
+    print(f"production replacement collection package id: {package['production_replacement_collection_package_id']}")
+    print(f"status: {summary['collection_status']}")
+    print(f"ready tasks: {summary['ready_task_count']}")
+    print(f"blocked tasks: {summary['blocked_task_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_collection_package_verify(args: argparse.Namespace) -> int:
+    try:
+        package = load_external_evidence_production_replacement_collection_package(args.package)
+        review = load_external_evidence_production_replacement_submission_review(args.review)
+        manifest = load_external_evidence_manifest(args.manifest)
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        result = verify_external_evidence_production_replacement_collection_package(
+            package,
+            review,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            require_ready=args.require_ready,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement collection package verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = package.get("summary", {})
+        print(f"verified external evidence production replacement collection package: {args.package}")
+        print(f"production replacement collection package id: {package.get('production_replacement_collection_package_id')}")
+        print(f"status: {summary.get('collection_status')}")
+        print(f"ready tasks: {summary.get('ready_task_count', 0)}")
+        print(f"blocked tasks: {summary.get('blocked_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement collection package verification failed: {args.package}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def cmd_external_evidence_production_replacement_closure(args: argparse.Namespace) -> int:
     try:
         review = load_external_evidence_production_replacement_submission_review(args.review)
@@ -28859,6 +28951,33 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_submission_review_verify.add_argument("--require-ready", action="store_true", help="exit non-zero unless the production replacement submission review is ready to collect")
     external_evidence_production_replacement_submission_review_verify.add_argument("--now")
     external_evidence_production_replacement_submission_review_verify.set_defaults(func=cmd_external_evidence_production_replacement_submission_review_verify)
+
+
+
+    external_evidence_production_replacement_collection_package = subparsers.add_parser("external-evidence-production-replacement-collection-package", help="write a collection handoff package from a reviewed production replacement submission")
+    external_evidence_production_replacement_collection_package.add_argument("review")
+    external_evidence_production_replacement_collection_package.add_argument("manifest")
+    external_evidence_production_replacement_collection_package.add_argument("roadmap_audit")
+    external_evidence_production_replacement_collection_package.add_argument("--root", default=".")
+    external_evidence_production_replacement_collection_package.add_argument("--snapshot-dir", default="artifacts/external-evidence-sources")
+    external_evidence_production_replacement_collection_package.add_argument("--intake-dir", default="artifacts/external-evidence-intakes")
+    external_evidence_production_replacement_collection_package.add_argument("--rebuilt-manifest-out", default="artifacts/external-evidence-manifest-from-production-replacement.json")
+    external_evidence_production_replacement_collection_package.add_argument("--readiness-out", default="artifacts/external-evidence-production-readiness.json")
+    external_evidence_production_replacement_collection_package.add_argument("--require-ready", action="store_true", help="exit non-zero unless the production replacement collection package is ready to collect")
+    external_evidence_production_replacement_collection_package.add_argument("--generated-at")
+    external_evidence_production_replacement_collection_package.add_argument("--out", default="artifacts/external-evidence-production-replacement-collection-package.json")
+    external_evidence_production_replacement_collection_package.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-collection-package.md")
+    external_evidence_production_replacement_collection_package.add_argument("--fulfilled-source-map-out")
+    external_evidence_production_replacement_collection_package.set_defaults(func=cmd_external_evidence_production_replacement_collection_package)
+
+    external_evidence_production_replacement_collection_package_verify = subparsers.add_parser("external-evidence-production-replacement-collection-package-verify", help="verify a production replacement collection handoff package")
+    external_evidence_production_replacement_collection_package_verify.add_argument("package")
+    external_evidence_production_replacement_collection_package_verify.add_argument("review")
+    external_evidence_production_replacement_collection_package_verify.add_argument("manifest")
+    external_evidence_production_replacement_collection_package_verify.add_argument("roadmap_audit")
+    external_evidence_production_replacement_collection_package_verify.add_argument("--root", default=".")
+    external_evidence_production_replacement_collection_package_verify.add_argument("--require-ready", action="store_true", help="exit non-zero unless the production replacement collection package is ready to collect")
+    external_evidence_production_replacement_collection_package_verify.set_defaults(func=cmd_external_evidence_production_replacement_collection_package_verify)
 
     external_evidence_production_replacement_closure = subparsers.add_parser("external-evidence-production-replacement-closure", help="write final closure status for production authority replacement tasks against a readiness report")
     external_evidence_production_replacement_closure.add_argument("review")

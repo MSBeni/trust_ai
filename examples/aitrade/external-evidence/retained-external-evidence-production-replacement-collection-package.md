@@ -1,17 +1,17 @@
-# External Evidence Production Replacement Submission Review
+# External Evidence Production Replacement Collection Package
 
-- Review ID: `4f50b9cff3f6108e45dc3d65a0b0f4534db6b8392b1907bef371b5ba1e4ea449`
+- Package ID: `216aec6ad300c421fab82ec0fb2765f48cfe0db378fd8c06e83d8e28f164af41`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Requests: 72
-- Fulfillments: 72
-- Owners: 10
+- Review status: `blocked`
 - Ready tasks: 0
 - Blocked tasks: 72
 - Placeholder source URIs: 72
 - Live source URIs: 0
+- Snapshot directory: `artifacts/external-evidence-sources`
+- Intake directory: `artifacts/external-evidence-intakes`
 
-## Task Review
+## Tasks
 
 | Task | Owner | Authority | Source URI Status | Review Status | Snapshot | Intake |
 |---|---|---|---|---|---|---|
@@ -88,27 +88,20 @@
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | `identity-provider` | placeholder | blocked | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
 | `trust-network-procurement-and-marketplace:customer` | customer success/account owner | `customer` | placeholder | blocked | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/customer.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/customer.json |
 
-## Blockers
+## Commands
 
-- production replacement submission review contains 72 placeholder source_uri values
-- fulfilled production source map: source map contains 72 placeholder source_uri values but live source URIs are required
+- collect_batch: `python -m trustai external-evidence-collect-batch <package.fulfilled_source_map.json> <source-manifest.json> <roadmap-audit.json> --root . --require-live-source-uris --require-source-snapshot-artifacts --require-fresh-source-snapshot-artifacts`
+- rebuild_manifest_from_intakes: `python -m trustai external-evidence-manifest-from-intakes <plan-all.json> <source-manifest.json> <roadmap-audit.json> --intake-dir artifacts/external-evidence-intakes --require-live-source-uris --require-source-snapshot-artifacts --require-fresh-source-snapshot-artifacts --out artifacts/external-evidence-manifest-from-production-replacement.json`
+- prove_production_ready: `python -m trustai external-evidence-readiness <gap-report.json> <rebuilt-manifest.json> <remaining-plan.json> <source-map.json> <roadmap-audit.json> --root . --require-ready --out artifacts/external-evidence-production-readiness.json`
+- close_replacement: `python -m trustai external-evidence-production-replacement-closure <ready-review.json> <production-readiness.json> --require-closed`
 
 ## Next Actions
 
-- Replace every TODO production-authority source_uri in the production replacement intake template with a live authority-owned URI.
-- Regenerate this review with --require-live-source-uris before collecting source snapshots.
-- After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the manifest from intake receipts.
-
-## Commands
-
-- review_submission: `python -m trustai external-evidence-production-replacement-submission-review <intake-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --out <review.json> --fulfilled-source-map-out <fulfilled-source-map.json>`
-- collect_after_ready_review: `python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris --require-fresh-source-snapshot-artifacts`
-- rebuild_manifest_after_intakes: `python -m trustai external-evidence-manifest-from-intakes <plan-all.json> <manifest.json> <roadmap-audit.json> --intake-dir <intake-dir> --require-live-source-uris --require-source-snapshot-artifacts --require-fresh-source-snapshot-artifacts`
-- prove_ready_after_rebuild: `python -m trustai external-evidence-readiness <gap-report.json> <rebuilt-manifest.json> <remaining-plan.json> <source-map.json> <roadmap-audit.json> --require-ready`
-- verify_ready_review: `python -m trustai external-evidence-production-replacement-submission-review-verify <review.json> <intake-template.json> <status-report.json> <plan-all.json> --require-ready`
+- Collect only after collection_status is ready-to-collect; blocked packages preserve the review work queue but must not be treated as production evidence.
+- Write the embedded fulfilled_source_map to disk and run collect_batch to create source snapshots and intake receipts.
+- Rebuild the external evidence manifest from intake receipts, regenerate readiness with --require-ready, then close the production replacement tasks.
 
 ## Limitations
 
-- This review proves production replacement submission readiness for collection only; it does not prove authority evidence has been collected.
-- A ready review still requires source snapshot collection, intake verification, manifest rebuild, readiness verification, and replacement plan closure.
-- Placeholder production-authority URIs intentionally keep the review blocked until owners supply live authority sources.
+- This package is an operator handoff for collection; it does not collect evidence or prove production readiness by itself.
+- Strict verification with --require-ready fails until the underlying submission review has no placeholder source URIs or blocked tasks.
