@@ -1198,6 +1198,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_plan,
     build_external_evidence_production_replacement_owner_packets,
     build_external_evidence_production_replacement_owner_packet_status,
+    build_external_evidence_production_replacement_intake_template,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
     build_external_evidence_collection_plan,
@@ -1222,6 +1223,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_plan,
     load_external_evidence_production_replacement_owner_packets,
     load_external_evidence_production_replacement_owner_packet_status,
+    load_external_evidence_production_replacement_intake_template,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_collection_run,
@@ -1246,6 +1248,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_plan,
     verify_external_evidence_production_replacement_owner_packets,
     verify_external_evidence_production_replacement_owner_packet_status,
+    verify_external_evidence_production_replacement_intake_template,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1277,6 +1280,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_owner_packets_markdown,
     write_external_evidence_production_replacement_owner_packet_status,
     write_external_evidence_production_replacement_owner_packet_status_markdown,
+    write_external_evidence_production_replacement_intake_template,
+    write_external_evidence_production_replacement_intake_template_markdown,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
@@ -17042,6 +17047,64 @@ def cmd_external_evidence_production_replacement_owner_packet_status_verify(args
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
+
+
+def cmd_external_evidence_production_replacement_intake_template(args: argparse.Namespace) -> int:
+    try:
+        status_report = load_external_evidence_production_replacement_owner_packet_status(args.status_report)
+        template = build_external_evidence_production_replacement_intake_template(
+            status_report,
+            owner_hint=args.owner_hint,
+            include_closed=args.include_closed,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_intake_template(template, status_report)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement intake template failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement intake template verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_intake_template(args.out, template)
+    if args.markdown:
+        write_external_evidence_production_replacement_intake_template_markdown(args.markdown, template)
+        print(f"external evidence production replacement intake template markdown: {args.markdown}")
+    summary = template["summary"]
+    print(f"external evidence production replacement intake template: {args.out}")
+    print(f"production replacement intake template id: {template['production_replacement_intake_template_id']}")
+    print(f"requests: {summary['request_count']}")
+    print(f"owners: {summary['owner_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_intake_template_verify(args: argparse.Namespace) -> int:
+    try:
+        template = load_external_evidence_production_replacement_intake_template(args.template)
+        status_report = load_external_evidence_production_replacement_owner_packet_status(args.status_report)
+        result = verify_external_evidence_production_replacement_intake_template(template, status_report)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement intake template verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = template.get("summary", {})
+        print(f"verified external evidence production replacement intake template: {args.template}")
+        print(f"production replacement intake template id: {template.get('production_replacement_intake_template_id')}")
+        print(f"requests: {summary.get('request_count', 0)}")
+        print(f"owners: {summary.get('owner_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement intake template verification failed: {args.template}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
 def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -28534,6 +28597,20 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_owner_packet_status_verify.add_argument("packet_bundle")
     external_evidence_production_replacement_owner_packet_status_verify.add_argument("plan")
     external_evidence_production_replacement_owner_packet_status_verify.set_defaults(func=cmd_external_evidence_production_replacement_owner_packet_status_verify)
+
+    external_evidence_production_replacement_intake_template = subparsers.add_parser("external-evidence-production-replacement-intake-template", help="write a fillable production authority intake template from replacement owner packet status")
+    external_evidence_production_replacement_intake_template.add_argument("status_report")
+    external_evidence_production_replacement_intake_template.add_argument("--owner-hint", help="limit template rows to one owner hint")
+    external_evidence_production_replacement_intake_template.add_argument("--include-closed", action="store_true", help="include closed tasks; defaults to open and blocked tasks only")
+    external_evidence_production_replacement_intake_template.add_argument("--generated-at")
+    external_evidence_production_replacement_intake_template.add_argument("--out", default="artifacts/external-evidence-production-replacement-intake-template.json")
+    external_evidence_production_replacement_intake_template.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-intake-template.md")
+    external_evidence_production_replacement_intake_template.set_defaults(func=cmd_external_evidence_production_replacement_intake_template)
+
+    external_evidence_production_replacement_intake_template_verify = subparsers.add_parser("external-evidence-production-replacement-intake-template-verify", help="verify a production authority intake template from replacement owner packet status")
+    external_evidence_production_replacement_intake_template_verify.add_argument("template")
+    external_evidence_production_replacement_intake_template_verify.add_argument("status_report")
+    external_evidence_production_replacement_intake_template_verify.set_defaults(func=cmd_external_evidence_production_replacement_intake_template_verify)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")

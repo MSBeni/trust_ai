@@ -35,6 +35,7 @@ EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA = "trustai.external-evidence-production-replacement-plan/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA = "trustai.external-evidence-production-replacement-owner-packet-bundle/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-production-replacement-owner-packet-status/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA = "trustai.external-evidence-production-replacement-intake-template/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
@@ -282,6 +283,13 @@ class ExternalEvidenceProductionReplacementOwnerPacketVerification:
 
 @dataclass
 class ExternalEvidenceProductionReplacementOwnerPacketStatusVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementIntakeTemplateVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -3809,6 +3817,188 @@ def verify_external_evidence_production_replacement_owner_packet_status(
         if summary.get("blocked_task_count"):
             warnings.append(f"production replacement owner packet status contains {summary.get('blocked_task_count')} blocked replacement tasks")
     return ExternalEvidenceProductionReplacementOwnerPacketStatusVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def _external_evidence_production_replacement_intake_selected_tasks(
+    status_report: dict[str, Any],
+    *,
+    owner_hint: str | None,
+    include_closed: bool,
+) -> list[dict[str, Any]]:
+    tasks = status_report.get("tasks", []) if isinstance(status_report.get("tasks"), list) else []
+    selected: list[dict[str, Any]] = []
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+        if owner_hint and str(task.get("owner_hint") or "") != owner_hint:
+            continue
+        if not include_closed and task.get("task_status") == "closed":
+            continue
+        selected.append(task)
+    selected.sort(key=lambda item: (str(item.get("owner_hint") or ""), str(item.get("unit_ref") or item.get("task_ref") or "")))
+    return selected
+
+
+def _external_evidence_production_replacement_placeholder_source_uri(task: dict[str, Any]) -> str:
+    requirement_id = str(task.get("requirement_id") or "requirement").strip() or "requirement"
+    authority_kind = str(task.get("authority_kind") or "authority").strip() or "authority"
+    return f"TODO://production-authority/{requirement_id}/{authority_kind}"
+
+
+def _external_evidence_production_replacement_intake_description(task: dict[str, Any]) -> str:
+    requirement_id = str(task.get("requirement_id") or "").strip()
+    authority_kind = str(task.get("authority_kind") or "").strip()
+    return f"Production authority evidence replacing retained {authority_kind} coverage for {requirement_id}".strip()
+
+
+def _external_evidence_production_replacement_fulfillment_record(task: dict[str, Any]) -> dict[str, Any]:
+    task_ref = str(task.get("unit_ref") or task.get("collection_task_ref") or task.get("task_ref") or "").strip()
+    return {
+        "task": task_ref,
+        "source_uri": _external_evidence_production_replacement_placeholder_source_uri(task),
+        "description": _external_evidence_production_replacement_intake_description(task),
+        "source_file": str(task.get("suggested_artifact_path") or "").strip(),
+        "retrieval_method": "authority-export",
+        "content_type": "application/json",
+        "issuer": "TODO: authority-owned issuer",
+        "subject": f"TODO: production authority source for {task_ref}",
+        "issued_at": "TODO: RFC3339 issued_at",
+        "expires_at": "TODO: RFC3339 expires_at",
+    }
+
+
+def _external_evidence_production_replacement_request_record(task: dict[str, Any]) -> dict[str, Any]:
+    fulfillment = _external_evidence_production_replacement_fulfillment_record(task)
+    authority_kind = str(task.get("authority_kind") or "other")
+    return {
+        "task_ref": task.get("task_ref"),
+        "unit_ref": task.get("unit_ref"),
+        "collection_task_ref": task.get("collection_task_ref"),
+        "requirement_id": task.get("requirement_id"),
+        "authority_kind": authority_kind,
+        "owner_hint": task.get("owner_hint"),
+        "priority": task.get("priority"),
+        "phase": task.get("phase"),
+        "task_status": task.get("task_status"),
+        "replacement_status": task.get("replacement_status"),
+        "suggested_artifact_path": task.get("suggested_artifact_path"),
+        "suggested_evidence_sources": AUTHORITY_KIND_EVIDENCE_HINTS.get(authority_kind, AUTHORITY_KIND_EVIDENCE_HINTS["other"]),
+        "fulfillment": fulfillment,
+        "acceptance_criteria": list(task.get("acceptance_criteria") or []),
+        "next_actions": list(task.get("next_actions") or []),
+        "replaces_artifacts": list(task.get("replaces_artifacts") or []),
+        "replaces_evidence_ids": list(task.get("replaces_evidence_ids") or []),
+        "retained_source_uris": list(task.get("retained_source_uris") or []),
+        "non_production_reasons": list(task.get("non_production_reasons") or []),
+        "blocking_reasons": list(task.get("blocking_reasons") or []),
+    }
+
+
+def build_external_evidence_production_replacement_intake_template(
+    status_report: dict[str, Any],
+    *,
+    owner_hint: str | None = None,
+    include_closed: bool = False,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if status_report.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA:
+        raise ValueError(f"unsupported external evidence production replacement owner packet status schema: {status_report.get('schema')}")
+    if status_report.get("owner_packet_status_id") != content_hash(without_keys(status_report, "owner_packet_status_id")):
+        raise ValueError("owner_packet_status_id does not match canonical production replacement owner packet status body")
+    owner_filter = str(owner_hint).strip() if owner_hint else None
+    selected_tasks = _external_evidence_production_replacement_intake_selected_tasks(
+        status_report,
+        owner_hint=owner_filter,
+        include_closed=include_closed,
+    )
+    requests = [_external_evidence_production_replacement_request_record(task) for task in selected_tasks]
+    fulfillments = [request["fulfillment"] for request in requests]
+    owner_hints = sorted({str(task.get("owner_hint") or "unknown") for task in selected_tasks})
+    blocked_count = sum(1 for task in selected_tasks if task.get("task_status") == "blocked")
+    open_count = sum(1 for task in selected_tasks if task.get("task_status") == "open")
+    closed_count = sum(1 for task in selected_tasks if task.get("task_status") == "closed")
+    placeholder_count = sum(1 for fulfillment in fulfillments if _source_map_is_placeholder_uri(str(fulfillment.get("source_uri") or "")))
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_owner_packet_status": {
+            "owner_packet_status_id": status_report.get("owner_packet_status_id"),
+            "owner_packet_status_hash": content_hash(status_report),
+            "schema": status_report.get("schema"),
+            "generated_at": status_report.get("generated_at"),
+        },
+        "filters": {"owner_hint": owner_filter, "include_closed": include_closed},
+        "summary": {
+            "request_count": len(requests),
+            "fulfillment_count": len(fulfillments),
+            "owner_count": len(owner_hints),
+            "owners": owner_hints,
+            "open_task_count": open_count,
+            "blocked_task_count": blocked_count,
+            "closed_task_count": closed_count,
+            "placeholder_source_uri_count": placeholder_count,
+            "live_source_uri_count": len(fulfillments) - placeholder_count,
+            "task_count_by_authority_kind": _external_evidence_owner_packet_status_counts(selected_tasks, "authority_kind"),
+            "task_count_by_owner_hint": _external_evidence_owner_packet_status_counts(selected_tasks, "owner_hint"),
+        },
+        "requests": requests,
+        "fulfillments": fulfillments,
+        "commands": {
+            "fill_then_fulfill_source_map": "python -m trustai external-evidence-source-map-fulfill <source-map-template.json> <plan.json> --fulfillment-file <this-template.json> --require-live-source-uris --out <fulfilled-source-map.json>",
+            "collect_after_fulfillment": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris --require-fresh-source-snapshot-artifacts",
+            "rebuild_manifest_after_intakes": "python -m trustai external-evidence-manifest-from-intakes <plan.json> <manifest.json> <roadmap-audit.json> --intake-dir <intake-dir> --require-live-source-uris --require-source-snapshot-artifacts --require-fresh-source-snapshot-artifacts",
+            "prove_ready_after_rebuild": "python -m trustai external-evidence-readiness <gap-report.json> <rebuilt-manifest.json> <remaining-plan.json> <source-map.json> <roadmap-audit.json> --require-ready",
+        },
+        "instructions": [
+            "Replace every TODO source_uri, issuer, subject, issued_at, expires_at, and source_file value with production authority-owned evidence metadata.",
+            "Keep fulfillments compatible with external-evidence-source-map-fulfill; richer task context is recorded under requests.",
+            "Do not close a production replacement task until the retained/reference artifact is replaced in a rebuilt manifest and the regenerated replacement plan no longer lists the task.",
+        ],
+        "limitations": [
+            "This template is an intake handoff for production authority evidence; it does not collect, verify, or satisfy production readiness by itself.",
+            "Placeholder TODO source URIs intentionally keep readiness blocked until owners replace them with live authority sources.",
+            "Retained example artifacts remain useful for demo verification but must not be counted as production authority evidence.",
+        ],
+    }
+    return {**body, "production_replacement_intake_template_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_intake_template(
+    template: dict[str, Any],
+    status_report: dict[str, Any],
+) -> ExternalEvidenceProductionReplacementIntakeTemplateVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if template.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement intake template schema: {template.get('schema')}")
+    if template.get("production_replacement_intake_template_id") != content_hash(without_keys(template, "production_replacement_intake_template_id")):
+        errors.append("production_replacement_intake_template_id does not match canonical production replacement intake template body")
+    source = template.get("source_owner_packet_status") if isinstance(template.get("source_owner_packet_status"), dict) else {}
+    if source.get("owner_packet_status_id") != status_report.get("owner_packet_status_id"):
+        errors.append("production replacement intake template source owner_packet_status_id does not match supplied status report")
+    if source.get("owner_packet_status_hash") != content_hash(status_report):
+        errors.append("production replacement intake template source owner_packet_status_hash does not match supplied status report")
+    filters = template.get("filters") if isinstance(template.get("filters"), dict) else {}
+    try:
+        expected = build_external_evidence_production_replacement_intake_template(
+            status_report,
+            owner_hint=filters.get("owner_hint"),
+            include_closed=bool(filters.get("include_closed")),
+            generated_at=str(template.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(template, "production_replacement_intake_template_id") != without_keys(expected, "production_replacement_intake_template_id"):
+            errors.append("production replacement intake template body does not match supplied owner packet status")
+    summary = template.get("summary", {}) if isinstance(template.get("summary"), dict) else {}
+    if summary.get("placeholder_source_uri_count"):
+        warnings.append(f"production replacement intake template contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+    if summary.get("open_task_count"):
+        warnings.append(f"production replacement intake template contains {summary.get('open_task_count')} open replacement tasks")
+    return ExternalEvidenceProductionReplacementIntakeTemplateVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
 def build_external_evidence_source_snapshot(
     *,
     source_uri: str,
@@ -5217,6 +5407,24 @@ def write_external_evidence_production_replacement_owner_packet_status_markdown(
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_production_replacement_owner_packet_status_markdown(status_report), encoding="utf-8")
+
+
+def write_external_evidence_production_replacement_intake_template(path: str | Path, template: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(template, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_intake_template(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_intake_template_markdown(path: str | Path, template: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_intake_template_markdown(template), encoding="utf-8")
+
+
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -5897,6 +6105,63 @@ def render_external_evidence_production_replacement_owner_packet_status_markdown
     else:
         lines.append("- None")
     return "\n".join(lines).rstrip() + "\n"
+
+
+def render_external_evidence_production_replacement_intake_template_markdown(template: dict[str, Any]) -> str:
+    summary = template.get("summary", {}) if isinstance(template.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Intake Template",
+        "",
+        f"- Intake template ID: `{template.get('production_replacement_intake_template_id')}`",
+        f"- Generated at: `{template.get('generated_at')}`",
+        f"- Requests: {summary.get('request_count', 0)}",
+        f"- Owners: {summary.get('owner_count', 0)}",
+        f"- Open tasks: {summary.get('open_task_count', 0)}",
+        f"- Blocked tasks: {summary.get('blocked_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        "",
+        "## Intake Requests",
+        "",
+        "| Unit | Owner | Authority | Source URI | Suggested Artifact |",
+        "|---|---|---|---|---|",
+    ]
+    requests = template.get("requests", [])
+    if isinstance(requests, list):
+        for request in requests:
+            if not isinstance(request, dict):
+                continue
+            fulfillment = request.get("fulfillment", {}) if isinstance(request.get("fulfillment"), dict) else {}
+            lines.append(
+                f"| `{_markdown_cell(request.get('unit_ref'))}` | {_markdown_cell(request.get('owner_hint'))} | "
+                f"`{_markdown_cell(request.get('authority_kind'))}` | {_markdown_cell(fulfillment.get('source_uri'))} | "
+                f"`{_markdown_cell(request.get('suggested_artifact_path'))}` |"
+            )
+    lines.extend(["", "## Fulfillments", "", "| Task | Source URI | Description | Source File |", "|---|---|---|---|"])
+    fulfillments = template.get("fulfillments", [])
+    if isinstance(fulfillments, list):
+        for fulfillment in fulfillments:
+            if not isinstance(fulfillment, dict):
+                continue
+            lines.append(
+                f"| `{_markdown_cell(fulfillment.get('task'))}` | {_markdown_cell(fulfillment.get('source_uri'))} | "
+                f"{_markdown_cell(fulfillment.get('description'))} | `{_markdown_cell(fulfillment.get('source_file'))}` |"
+            )
+    commands = template.get("commands", {}) if isinstance(template.get("commands"), dict) else {}
+    lines.extend(["", "## Commands", ""])
+    if commands:
+        for key, command in commands.items():
+            lines.append(f"- {key}: `{_markdown_cell(command)}`")
+    else:
+        lines.append("- None")
+    limitations = template.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def render_external_evidence_gap_report_markdown(report: dict[str, Any]) -> str:
     summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}
     lines = [

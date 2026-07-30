@@ -119,6 +119,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("retained-external-evidence-production-replacement-owner-packets.json", script)
         self.assertIn("external-evidence-production-replacement-owner-packet-status", script)
         self.assertIn("retained-external-evidence-production-replacement-owner-packet-status.json", script)
+        self.assertIn("external-evidence-production-replacement-intake-template", script)
+        self.assertIn("retained-external-evidence-production-replacement-intake-template.json", script)
         self.assertTrue(TESTS_INIT.exists())
 
     def test_readme_and_ci_retained_evidence_counts_match_manifest(self):

@@ -1304,6 +1304,16 @@ def refresh_retained_artifacts() -> None:
         "--markdown",
         path("retained-external-evidence-production-replacement-owner-packet-status.md"),
     )
+    run(
+        "external-evidence-production-replacement-intake-template",
+        path("retained-external-evidence-production-replacement-owner-packet-status.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-intake-template.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-intake-template.md"),
+    )
 
 
 def write_deterministic_source_roadmap_audit() -> None:
@@ -1635,6 +1645,11 @@ def verify_retained_artifacts() -> None:
         path("retained-external-evidence-production-replacement-owner-packets.json"),
         path("retained-external-evidence-production-replacement-plan.json"),
     )
+    run(
+        "external-evidence-production-replacement-intake-template-verify",
+        path("retained-external-evidence-production-replacement-intake-template.json"),
+        path("retained-external-evidence-production-replacement-owner-packet-status.json"),
+    )
     assert_retained_counts()
     verify_retained_collection_chain()
 
@@ -1661,6 +1676,7 @@ def assert_retained_counts() -> None:
     production_replacement_plan = json_load(DIR / "retained-external-evidence-production-replacement-plan.json")
     production_replacement_owner_packets = json_load(DIR / "retained-external-evidence-production-replacement-owner-packets.json")
     production_replacement_owner_packet_status = json_load(DIR / "retained-external-evidence-production-replacement-owner-packet-status.json")
+    production_replacement_intake_template = json_load(DIR / "retained-external-evidence-production-replacement-intake-template.json")
     remaining_package_count = len(work_package.get("packages", []))
     expected_review_status = "ready-to-collect" if remaining_count == 0 else "blocked"
     expected_review_source_map_ok = remaining_count == 0
@@ -1708,6 +1724,11 @@ def assert_retained_counts() -> None:
         (production_replacement_owner_packet_status["summary"]["open_task_count"], expected_non_production_count, "production replacement owner packet status open task count"),
         (production_replacement_owner_packet_status["summary"]["blocked_task_count"], 0, "production replacement owner packet status blocked task count"),
         (production_replacement_owner_packet_status["summary"]["closed_task_count"], 0, "production replacement owner packet status closed task count"),
+        (production_replacement_intake_template["summary"]["request_count"], expected_non_production_count, "production replacement intake template request count"),
+        (production_replacement_intake_template["summary"]["fulfillment_count"], expected_non_production_count, "production replacement intake template fulfillment count"),
+        (production_replacement_intake_template["summary"]["owner_count"], production_replacement_owner_packet_status["summary"]["packet_count"], "production replacement intake template owner count"),
+        (production_replacement_intake_template["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement intake template placeholder URI count"),
+        (production_replacement_intake_template["summary"]["open_task_count"], expected_non_production_count, "production replacement intake template open task count"),
     ]
     for actual, expected, label in checks:
         if actual != expected:

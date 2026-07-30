@@ -16,43 +16,43 @@
     "Regenerate production readiness with the rebuilt manifest and require-ready gate.",
     "Append the complete external-evidence manifest to the roadmap evidence chain."
   ],
-  "owner_fulfillment_closure_id": "e9247aecb5b1f403abc6b218c0d2470d6e889b165c682cb4836fdd7a12aa84b0",
+  "owner_fulfillment_closure_id": "4bd2d3e95d82a1e8625ac807e05c7db9f5b91346690affd54b27d2acaab8bc6b",
   "schema": "trustai.external-evidence-owner-fulfillment-closure/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "9c9cbb93aa2c5d99f538f1d4179aa70654415e054ae19c3d49bc40ccaa068c1d",
-      "plan_id": "b416c7d390aa274ed1996f7fe61059722d4ec839b4bd1ebd94e6fccc726b2125",
+      "plan_hash": "08b8ddc9e7d6580b3c0d1f64bc5b50d71141c72c376dd7b80353f5c2fbd6465f",
+      "plan_id": "710e90910a46aa6c156bcb2d05409fe5850e3369a868f8be0ebe65833de3ab9c",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_review": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_review_hash": "1f062f8598e3dc2dcdee9b9bcf4e0913a7467e08f8464da770f33d4206b70489",
-      "owner_fulfillment_review_id": "f4991b3d2417ce2cd8bd38ea46551260f09b0b536d4b248f82ca26b4e0a5167e",
+      "owner_fulfillment_review_hash": "4092903a49e2b4630c800b461345cd8a85aee712ee14a0e67f13464126410c09",
+      "owner_fulfillment_review_id": "ba0b0eef1679d0370edbd5eae31b21b9690740171947f210a107e95204d09e33",
       "schema": "trustai.external-evidence-owner-fulfillment-review/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "12ceb3bcf203aef7f4a7beea70e26052ddab90d8d95eba9c7f8e5c9a86ef4a2a",
-      "owner_packet_status_id": "fdf3fde40992a4585d49e0e28a30e54c7abae0508b824e74fc617579e1e71378",
+      "owner_packet_status_hash": "4468f2650762dee474fc219c92ea97175b1d6af48df15a0d9006591a4009ec7f",
+      "owner_packet_status_id": "0eed6ceff66402b9b88e602242d1030861d7f23d88cf72228ecc06d85b04467b",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "rebuilt_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "ad3391e26783bf2058da7cf06e5b012e6fa8307426075977d53e44f1cfd06633",
-      "manifest_id": "c216c8a60b5e19b70bcb178d9e8027418313ed160957a95b47cb000588bf999d",
+      "manifest_hash": "980a01cf4a4152d5bb3180c68f4314e0a840ac01d73dc78d965ecad84aa7846e",
+      "manifest_id": "33413ec31c9031bc44777b5c6cba578dc01e9a3faeba44d1a4dea039792dbce5",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "15a861ff61934bc3437629839772dc2a2e5e41e34beed3e4eb92471059e4d839",
-      "audit_id": "4ce3e573b8cbf6255dce3c41a9288579422ec2e62e25ae1375d09817144d019d",
+      "audit_hash": "5972fb17494ada96b8703049010529edcb0d0b7b79fbdb50233913013192dc90",
+      "audit_id": "b82f08e80be07b28e93fb21f14ea1ab391a4e3717e36da96d7e2f83182240183",
       "generated_at": "2026-07-12T00:00:00Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "ad3391e26783bf2058da7cf06e5b012e6fa8307426075977d53e44f1cfd06633",
-      "manifest_id": "c216c8a60b5e19b70bcb178d9e8027418313ed160957a95b47cb000588bf999d",
+      "manifest_hash": "980a01cf4a4152d5bb3180c68f4314e0a840ac01d73dc78d965ecad84aa7846e",
+      "manifest_id": "33413ec31c9031bc44777b5c6cba578dc01e9a3faeba44d1a4dea039792dbce5",
       "schema": "trustai.external-evidence-manifest/0.1"
     }
   },
