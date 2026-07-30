@@ -213,7 +213,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA, plan["schema"])
         self.assertTrue(result.ok, result.errors)
         self.assertEqual(manifest["summary"]["missing_authority_kind_count"], plan["summary"]["selected_task_count"])
-        self.assertEqual(70, plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(71, plan["summary"]["selected_missing_task_count"])
         self.assertEqual(0, plan["summary"]["selected_covered_task_count"])
         self.assertFalse(any(task["coverage_status"] == "covered" for task in plan["tasks"]))
         provider_task = next(
@@ -2349,8 +2349,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual("git-ls-remote", snapshot["retrieval_method"])
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
-        self.assertEqual(71, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(71, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(72, rebuilt["summary"]["required_authority_kind_count"])
+        self.assertEqual(72, rebuilt["summary"]["covered_authority_kind_count"])
         self.assertEqual(0, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
         self.assertEqual(0, remaining_plan["summary"]["selected_task_count"])
@@ -2362,14 +2362,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
         self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
-        self.assertEqual(71, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(72, collected_source_map["summary"]["entry_count"])
         self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
-        self.assertEqual(71, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(72, collected_source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
         self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
         self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
-        self.assertEqual(71, collection_run["summary"]["collected_count"])
-        self.assertEqual(71, collection_run_result.collected_count)
+        self.assertEqual(72, collection_run["summary"]["collected_count"])
+        self.assertEqual(72, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -2407,7 +2407,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["runtime-policy-and-attestation"],
         )
         self.assertEqual(
-            ["kms-hsm", "provider-api", "identity-provider", "standards-body"],
+            ["kms-hsm", "provider-api", "identity-provider", "standards-body", "customer"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["shadow-replay-temporal-holdout"],
         )
         self.assertEqual(
@@ -2489,8 +2489,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
             self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
             self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
-            self.assertEqual(71, collection_payload["collected_count"])
-            self.assertEqual(71, collection_payload["task_count"])
+            self.assertEqual(72, collection_payload["collected_count"])
+            self.assertEqual(72, collection_payload["task_count"])
             self.assertTrue(collection_payload["require_live_source_uris"])
             self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
             self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
@@ -2695,7 +2695,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 any("verification_options" in error for error in strict_report_result.errors),
                 strict_report_result.errors,
             )
-            self.assertEqual(71, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(72, report["summary"]["covered_authority_kind_count"])
             self.assertEqual(0, report["summary"]["missing_authority_kind_count"])
             self.assertEqual(0, report["summary"]["remaining_task_count"])
             self.assertEqual(0, report["summary"]["source_map_entry_count"])
@@ -2995,7 +2995,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 self.assertEqual(2, run["summary"]["collected_count"])
                 self.assertEqual(2, len(intakes))
                 self.assertEqual(2, rebuilt["summary"]["covered_authority_kind_count"])
-                self.assertEqual(69, rebuilt["summary"]["missing_authority_kind_count"])
+                self.assertEqual(70, rebuilt["summary"]["missing_authority_kind_count"])
                 self.assertEqual(
                     ["ci-run", "provider-api"],
                     rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -3069,7 +3069,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             ["ci-run", "provider-api"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
         )
-        self.assertEqual(69, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(70, rebuilt["summary"]["missing_authority_kind_count"])
 
         tampered = copy.deepcopy(intake)
         tampered["source_manifest"]["manifest_id"] = "wrong"
@@ -3838,7 +3838,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             rebuilt_manifest = load_external_evidence_manifest(rebuilt_manifest_path)
             directory_intakes = load_external_evidence_intakes(directories=[intake_dir_path])
             self.assertEqual(1, len(directory_intakes))
-            self.assertEqual(70, plan["summary"]["selected_task_count"])
+            self.assertEqual(71, plan["summary"]["selected_task_count"])
             self.assertTrue(plan_markdown_path.exists())
             self.assertIn("External Evidence Collection Plan", plan_markdown_path.read_text(encoding="utf-8"))
             self.assertIn("oss-verifier-and-public-spec,ci-run", intake["evidence_argument"])

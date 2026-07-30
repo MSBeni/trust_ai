@@ -32,6 +32,16 @@ the replay window is treated as complete.
 `temporal-holdout-append` expose the replay holdout manifest as a standalone
 artifact for third-party review before a full proof pack is assembled.
 
+`shadow-replay-review-bundle`, `shadow-replay-review-bundle-verify`,
+`shadow-replay-review-bundle-render`,
+`shadow-replay-review-bundle-extract`, and
+`shadow-replay-review-bundle-append` package the contract, replay source,
+temporal holdout manifest, traffic export, traffic completeness receipt,
+provider export, optional re-execution report, optional soak-demotion evidence,
+and optional production authority dossier into a self-contained offline review
+bundle. Verification replays embedded source bytes without depending on the
+reviewer's local file paths.
+
 Soak reports summarize post-promotion windows and append
 `soak_report.completed` evidence. Blocking high/critical incidents or drift
 alarms fail the report. `trustai soak-report --demote-on-failure` records the

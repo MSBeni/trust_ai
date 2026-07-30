@@ -80,6 +80,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("tests.test_packaging", workflow)
         self.assertIn("tests.test_roadmap_audit", workflow)
         self.assertIn("tests.test_external_evidence", workflow)
+        self.assertIn("tests.test_shadow_replay_review_bundle", workflow)
         self.assertIn("tests.test_tamper_stress", workflow)
         self.assertIn("tests.test_standards", workflow)
 

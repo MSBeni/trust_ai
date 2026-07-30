@@ -66,7 +66,9 @@ class RoadmapAuditTests(unittest.TestCase):
         shadow_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "shadow-replay-temporal-holdout")
         shadow_evidence = {item["path"] for item in shadow_requirement["evidence"]}
         self.assertIn("src/trustai/shadow.py", shadow_evidence)
+        self.assertIn("src/trustai/shadow_replay_review_bundle.py", shadow_evidence)
         self.assertIn("tests/test_temporal_holdout.py", shadow_evidence)
+        self.assertIn("tests/test_shadow_replay_review_bundle.py", shadow_evidence)
         self.assertIn("duplicate replay record identity violations", " ".join(shadow_requirement["external_authority_required"]))
         cicd_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "cicd-provider-approvals")
         cicd_evidence = {item["path"] for item in cicd_requirement["evidence"]}
@@ -114,6 +116,7 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("tests/test_framework_adapter_matrix.py", framework_evidence)
         shadow_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "shadow-replay-temporal-holdout")
         shadow_evidence = {item["path"] for item in shadow_requirement["evidence"]}
+        self.assertIn("docs/specs/shadow-replay-review-bundle-v0.1.md", shadow_evidence)
         self.assertIn("docs/specs/temporal-holdout-manifest-v0.1.md", shadow_evidence)
         self.assertIn("docs/specs/traffic-holdout-export-v0.1.md", shadow_evidence)
         self.assertIn("docs/specs/traffic-completeness-receipt-v0.1.md", shadow_evidence)
@@ -124,6 +127,7 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("examples/aitrade/traffic-completeness-provider-export.json", shadow_evidence)
         shadow_external_authority = " ".join(shadow_requirement["external_authority_required"])
         self.assertIn("retained provider export byte replay", shadow_external_authority)
+        self.assertIn("shadow replay review bundles embed", shadow_external_authority)
         self.assertIn("tests/test_phase1_phase2.py", shadow_evidence)
         byoc_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "byoc-self-hosted")
         byoc_evidence = {item["path"] for item in byoc_requirement["evidence"]}

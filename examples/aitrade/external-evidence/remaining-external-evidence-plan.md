@@ -1,15 +1,15 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `5e936cb44f2b2dcd82ff571749ac0b610fc1699b006c11aeb3b0d8d5cf12cb7a`
+Plan ID: `f76e6d29e14373fda72a0dbd8504b972f58c6f9a2439d7f4e93b7ea5c543acc6`
 
-Source manifest: `78704be4931d1f72e2a53046eb765beb0a0a87b346a7a2391f34c130c9f8d36b`
+Source manifest: `f04254e3850fd42bd1f9fbbc954f3e3e1a2cafe04d1285169fa631897dbf88d7`
 
 Status filter: missing
 
 ## Summary
 
 - Source manifest status: complete
-- Total authority units: 71
+- Total authority units: 72
 - Selected tasks: 0
 - Selected missing tasks: 0
 - Selected covered tasks: 0

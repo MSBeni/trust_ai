@@ -1,0 +1,50 @@
+{
+  "accepted_controls": [
+    "shadow replay dataset reviewed",
+    "temporal holdout and traffic completeness evidence accepted",
+    "offline review bundle available for third-party replay",
+    "model-risk and trading-ops approvals retained",
+    "customer signoff limited to supplied retained artifacts"
+  ],
+  "acceptance": {
+    "accepted_at": "2026-07-03T13:10:00Z",
+    "accepted_by": "customer-risk@example.com",
+    "acceptance_ref": "customer-signoff:aitrade/shadow-holdout/2026-07-03",
+    "authority_ref": "customer:aitrade/model-risk-shadow-review",
+    "environment": "aitrade-prod",
+    "scope": "BTCUSDT governed trading shadow replay"
+  },
+  "artifacts": {
+    "provider_export": {
+      "path": "examples/aitrade/traffic-completeness-provider-export.json",
+      "sha256": "sha256:639f1d5ed8e3d4d61bcbbcbdafabdcaff1ca5c8feeb0cb8ce307872fcca8e524"
+    },
+    "review_bundle_source": {
+      "path": "src/trustai/shadow_replay_review_bundle.py",
+      "sha256": "sha256:63b6f0d7f7f44fa30bdcff3e48f460c4814bc9b4edc9fcb8f15189fd824b2ce8"
+    },
+    "review_bundle_spec": {
+      "path": "docs/specs/shadow-replay-review-bundle-v0.1.md",
+      "sha256": "sha256:c1ea3cd9cd59eec08dc89a54e7e1c5f669f1a3a88ed47603e85232f61bae4a33"
+    },
+    "review_bundle_tests": {
+      "path": "tests/test_shadow_replay_review_bundle.py",
+      "sha256": "sha256:2a2a860cfe71c62c6e499d928249788ada38cb78c8be811a6f1718065c1418a0"
+    },
+    "shadow_replay": {
+      "path": "examples/aitrade/shadow-replay.json",
+      "sha256": "sha256:d55325fc4d74ff40bf14b3b6e28c669240e85cbbbdc46720439e361a7fc0bcb6"
+    }
+  },
+  "dataset": {
+    "candidate_version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+    "dataset_id": "prod-traffic-holdout-20260702",
+    "replay_run_id": "shadow-replay-20260703-btcusdt"
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "customer-export:aitrade/shadow-holdout/acceptance/2026-07-03",
+  "issued_at": "2026-07-03T13:12:00Z",
+  "issuer": "Example Aitrade Customer",
+  "schema": "trustai.shadow-holdout-customer-authority-export/0.1",
+  "subject": "aitrade shadow replay temporal holdout customer acceptance"
+}

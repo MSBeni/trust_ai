@@ -1,25 +1,27 @@
 {
-  "evidence_argument": "design-partner-pilot-exit-criteria,insurer,examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json,Retained insurer export for design-partner underwriting review evidence;issuer=Example AI Liability Underwriter;subject=TrustAI design-partner underwriting review;source_uri=https://insurer.example/exports/trustai/design-partner/underwriting-review;issued_at=2026-07-11T23:11:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_argument": "shadow-replay-temporal-holdout,customer,examples/aitrade/external-evidence/shadow-holdout-customer-source-snapshot.json,Retained customer acceptance export for shadow replay temporal holdout review evidence;issuer=Example Aitrade Customer;subject=aitrade shadow replay temporal holdout customer acceptance;source_uri=https://customer.example/exports/aitrade/shadow-holdout/customer-acceptance;issued_at=2026-07-03T13:12:00Z;expires_at=2026-12-31T00:00:00Z",
   "evidence_item": {
     "accepted_authority_kinds": [
-      "regulator",
-      "insurer",
+      "kms-hsm",
+      "provider-api",
+      "identity-provider",
+      "standards-body",
       "customer"
     ],
-    "authority_kind": "insurer",
-    "description": "Retained insurer export for design-partner underwriting review evidence",
-    "evidence_id": "bf5bbce326c8e1be65bfba2be80e011c4ca0f3b4139a3aa0994d937674982d2b",
+    "authority_kind": "customer",
+    "description": "Retained customer acceptance export for shadow replay temporal holdout review evidence",
+    "evidence_id": "69867db75c5c7afb1db4511e3b5f4c8a80471720166fbfcc0e91bbdb430b3547",
     "expires_at": "2026-12-31T00:00:00Z",
-    "issued_at": "2026-07-11T23:11:00Z",
-    "issuer": "Example AI Liability Underwriter",
-    "path": "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json",
-    "requirement_id": "design-partner-pilot-exit-criteria",
-    "sha256": "sha256:383c04dea9faf8c502c7ce5e9fe3879aaa645c4b30389ab74206c05b47968b9f",
-    "source_uri": "https://insurer.example/exports/trustai/design-partner/underwriting-review",
-    "subject": "TrustAI design-partner underwriting review"
+    "issued_at": "2026-07-03T13:12:00Z",
+    "issuer": "Example Aitrade Customer",
+    "path": "examples/aitrade/external-evidence/shadow-holdout-customer-source-snapshot.json",
+    "requirement_id": "shadow-replay-temporal-holdout",
+    "sha256": "sha256:1a73439313f2cb15ba317ef0db56557715b4a02125dd0284af48078c874f5512",
+    "source_uri": "https://customer.example/exports/aitrade/shadow-holdout/customer-acceptance",
+    "subject": "aitrade shadow replay temporal holdout customer acceptance"
   },
   "generated_at": "2026-07-12T00:01:00Z",
-  "intake_id": "a2d0f7d800a17618c44d5500f13eb4874717bbca1d58a023b2e490b0d7c2e786",
+  "intake_id": "ec1c6b1841695b727ef7c4e397c090e5d27f98d63e6f210554b569b486ccb4a3",
   "limitations": [
     "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
     "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
@@ -53,13 +55,13 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "task": {
-    "authority_kind": "insurer",
+    "authority_kind": "customer",
     "coverage_status": "missing",
-    "requirement_id": "design-partner-pilot-exit-criteria",
-    "suggested_artifact_path": "external-evidence/design-partner-pilot-exit-criteria/insurer.json",
-    "task_id": "f89ead8e5b1ef2df684cdafe8b68cc53afc9a520feb84ac4cf8a2372f4b9d833",
-    "task_ref": "external-evidence:design-partner-pilot-exit-criteria:insurer",
-    "unit_id": "d41d0d5c4e7c4c9fd33df8fb1685df9b9c7a4d826a0f813f8ab6d17dfc8fd769",
-    "unit_ref": "design-partner-pilot-exit-criteria:insurer"
+    "requirement_id": "shadow-replay-temporal-holdout",
+    "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/customer.json",
+    "task_id": "9e94928f3cff3893d475e9d0abeac048e6c325b15b797b7968979981e8a10fe9",
+    "task_ref": "external-evidence:shadow-replay-temporal-holdout:customer",
+    "unit_id": "e3c22965cff12b4534c0ba490681325928398df25807b95a94ad4681d0568e57",
+    "unit_ref": "shadow-replay-temporal-holdout:customer"
   }
 }

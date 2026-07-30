@@ -1143,6 +1143,17 @@ from .shadow_authority import (
     write_shadow_authority_dossier,
     write_shadow_authority_evidence_bundle,
 )
+from .shadow_replay_review_bundle import (
+    SHADOW_REPLAY_REVIEW_BUNDLE_MODES,
+    append_shadow_replay_review_bundle,
+    build_shadow_replay_review_bundle,
+    extract_shadow_replay_review_bundle_sources,
+    load_shadow_replay_review_bundle,
+    render_shadow_replay_review_bundle_markdown,
+    verify_shadow_replay_review_bundle,
+    write_shadow_replay_review_bundle,
+    write_shadow_replay_review_bundle_markdown,
+)
 from .tamper_stress import (
     build_tamper_stress_report,
     load_tamper_stress_report,
@@ -6896,6 +6907,171 @@ def cmd_temporal_holdout_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0 if manifest.get("passed") else 1
 
+
+def _load_shadow_replay_review_sources(args: argparse.Namespace) -> dict[str, Any]:
+    sources: dict[str, Any] = {
+        "contract": load_contract(args.contract),
+        "replay": load_shadow_replay(args.replay),
+        "temporal_holdout": load_temporal_holdout_manifest(args.temporal_holdout),
+        "traffic_export": load_traffic_holdout_export(args.traffic_export),
+        "traffic_completeness": load_traffic_completeness_receipt(args.traffic_completeness),
+        "provider_export": load_traffic_completeness_provider_export(args.provider_export),
+    }
+    if getattr(args, "reexecution_report", None):
+        sources["reexecution_report"] = load_reexecution_report(args.reexecution_report)
+    if getattr(args, "soak_entry", None):
+        sources["soak_entry"] = _load_json(args.soak_entry)
+    if getattr(args, "demotion_entry", None):
+        sources["demotion_entry"] = _load_json(args.demotion_entry)
+    if getattr(args, "soak_demotion", None):
+        sources["soak_demotion"] = load_soak_demotion_receipt(args.soak_demotion)
+    if getattr(args, "shadow_authority", None):
+        sources["shadow_authority"] = load_shadow_authority_dossier(args.shadow_authority)
+    return sources
+
+
+def _shadow_replay_review_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
+    paths: dict[str, str] = {
+        "contract": args.contract,
+        "replay": args.replay,
+        "temporal_holdout": args.temporal_holdout,
+        "traffic_export": args.traffic_export,
+        "traffic_completeness": args.traffic_completeness,
+        "provider_export": args.provider_export,
+    }
+    for name, attr in (
+        ("reexecution_report", "reexecution_report"),
+        ("soak_entry", "soak_entry"),
+        ("demotion_entry", "demotion_entry"),
+        ("soak_demotion", "soak_demotion"),
+        ("shadow_authority", "shadow_authority"),
+    ):
+        value = getattr(args, attr, None)
+        if value:
+            paths[name] = value
+    return paths
+
+
+def cmd_shadow_replay_review_bundle(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_shadow_replay_review_sources(args)
+        bundle = build_shadow_replay_review_bundle(
+            sources["contract"],
+            sources["replay"],
+            sources["temporal_holdout"],
+            sources["traffic_export"],
+            sources["traffic_completeness"],
+            sources["provider_export"],
+            artifact_paths=_shadow_replay_review_artifact_paths(args),
+            reexecution_report=sources.get("reexecution_report"),
+            soak_entry=sources.get("soak_entry"),
+            demotion_entry=sources.get("demotion_entry"),
+            soak_demotion=sources.get("soak_demotion"),
+            shadow_authority=sources.get("shadow_authority"),
+            mode=args.mode,
+            environment=args.environment,
+            reviewer_ref=args.reviewer_ref,
+            bundle_ref=args.bundle_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_shadow_replay_review_bundle(bundle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"shadow replay review bundle failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("shadow replay review bundle verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_shadow_replay_review_bundle(args.out, bundle)
+    if args.markdown:
+        write_shadow_replay_review_bundle_markdown(args.markdown, bundle)
+        print(f"shadow replay review bundle markdown: {args.markdown}")
+    print(f"shadow replay review bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"source artifacts: {bundle['summary']['source_artifact_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_shadow_replay_review_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_shadow_replay_review_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"shadow replay review bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_shadow_replay_review_bundle(bundle, key=args.key)
+    if result.ok:
+        print(f"verified shadow replay review bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"source artifacts: {bundle['summary']['source_artifact_count']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"shadow replay review bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_shadow_replay_review_bundle_render(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_shadow_replay_review_bundle(args.bundle)
+        result = verify_shadow_replay_review_bundle(bundle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"shadow replay review bundle render failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print(f"shadow replay review bundle render failed verification: {args.bundle}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    target = Path(args.out)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_shadow_replay_review_bundle_markdown(bundle), encoding="utf-8")
+    print(f"shadow replay review bundle markdown: {args.out}")
+    return 0
+
+
+def cmd_shadow_replay_review_bundle_extract(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_shadow_replay_review_bundle(args.bundle)
+        extracted = extract_shadow_replay_review_bundle_sources(
+            bundle,
+            args.out_dir,
+            key=args.key,
+            overwrite=args.overwrite,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"shadow replay review bundle extract failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"shadow replay review bundle sources extracted: {args.out_dir}")
+    print(f"sources: {len(extracted)}")
+    return 0
+
+
+def cmd_shadow_replay_review_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_shadow_replay_review_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"shadow replay review bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_shadow_replay_review_bundle(chain, bundle, key=args.key)
+    except ValueError as exc:
+        print(f"shadow replay review bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"shadow replay review bundle entry: {args.out}")
+    print(f"shadow replay review bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 
 def _shadow_authority_evidence_from_args(args: argparse.Namespace) -> list[dict[str, Any]]:
@@ -25215,6 +25391,55 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(shadow_authority_append)
     shadow_authority_append.set_defaults(func=cmd_shadow_authority_append)
 
+    def _add_shadow_replay_review_source_args(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("contract")
+        parser.add_argument("replay")
+        parser.add_argument("temporal_holdout")
+        parser.add_argument("traffic_export")
+        parser.add_argument("traffic_completeness")
+        parser.add_argument("provider_export")
+        parser.add_argument("--reexecution-report")
+        parser.add_argument("--soak-entry")
+        parser.add_argument("--demotion-entry")
+        parser.add_argument("--soak-demotion")
+        parser.add_argument("--shadow-authority")
+        parser.add_argument("--key")
+
+    shadow_review_bundle = subparsers.add_parser("shadow-replay-review-bundle", help="write a self-contained shadow replay review bundle")
+    _add_shadow_replay_review_source_args(shadow_review_bundle)
+    shadow_review_bundle.add_argument("--mode", choices=sorted(SHADOW_REPLAY_REVIEW_BUNDLE_MODES), default="offline-review")
+    shadow_review_bundle.add_argument("--environment")
+    shadow_review_bundle.add_argument("--reviewer-ref", required=True)
+    shadow_review_bundle.add_argument("--bundle-ref")
+    shadow_review_bundle.add_argument("--generated-at")
+    shadow_review_bundle.add_argument("--out", default="artifacts/shadow-replay-review-bundle.json")
+    shadow_review_bundle.add_argument("--markdown")
+    shadow_review_bundle.set_defaults(func=cmd_shadow_replay_review_bundle)
+
+    shadow_review_bundle_verify = subparsers.add_parser("shadow-replay-review-bundle-verify", help="verify a shadow replay review bundle")
+    shadow_review_bundle_verify.add_argument("bundle")
+    shadow_review_bundle_verify.add_argument("--key")
+    shadow_review_bundle_verify.set_defaults(func=cmd_shadow_replay_review_bundle_verify)
+
+    shadow_review_bundle_render = subparsers.add_parser("shadow-replay-review-bundle-render", help="render a shadow replay review bundle as Markdown")
+    shadow_review_bundle_render.add_argument("bundle")
+    shadow_review_bundle_render.add_argument("--out", default="artifacts/shadow-replay-review-bundle.md")
+    shadow_review_bundle_render.add_argument("--key")
+    shadow_review_bundle_render.set_defaults(func=cmd_shadow_replay_review_bundle_render)
+
+    shadow_review_bundle_extract = subparsers.add_parser("shadow-replay-review-bundle-extract", help="extract embedded shadow replay review bundle sources")
+    shadow_review_bundle_extract.add_argument("bundle")
+    shadow_review_bundle_extract.add_argument("--out-dir", default="artifacts/shadow-replay-review-bundle-sources")
+    shadow_review_bundle_extract.add_argument("--overwrite", action="store_true")
+    shadow_review_bundle_extract.add_argument("--key")
+    shadow_review_bundle_extract.set_defaults(func=cmd_shadow_replay_review_bundle_extract)
+
+    shadow_review_bundle_append = subparsers.add_parser("shadow-replay-review-bundle-append", help="append a verified shadow replay review bundle as chain evidence")
+    shadow_review_bundle_append.add_argument("bundle")
+    shadow_review_bundle_append.add_argument("--out", default="artifacts/shadow-replay-review-bundle-entry.json")
+    shadow_review_bundle_append.add_argument("--key")
+    _add_state_args(shadow_review_bundle_append)
+    shadow_review_bundle_append.set_defaults(func=cmd_shadow_replay_review_bundle_append)
     soak = subparsers.add_parser("soak-report", help="evaluate and evidence a soak report")
     soak.add_argument("contract")
     soak.add_argument("soak")

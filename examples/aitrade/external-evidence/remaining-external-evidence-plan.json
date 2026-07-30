@@ -5,33 +5,33 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "5e936cb44f2b2dcd82ff571749ac0b610fc1699b006c11aeb3b0d8d5cf12cb7a",
+  "plan_id": "f76e6d29e14373fda72a0dbd8504b972f58c6f9a2439d7f4e93b7ea5c543acc6",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "b93eb45b75462136f7496dc820d73bc049d3e8c8f840e7ce614995372415b4dc",
-    "manifest_id": "78704be4931d1f72e2a53046eb765beb0a0a87b346a7a2391f34c130c9f8d36b",
+    "manifest_hash": "3394f9eb1c2c8e1ad6144cb91f1660199c434675bceb46c3e17a3c9150600d37",
+    "manifest_id": "f04254e3850fd42bd1f9fbbc954f3e3e1a2cafe04d1285169fa631897dbf88d7",
     "manifest_ref": "production-external-evidence",
     "status": "complete"
   },
   "source_roadmap_audit": {
-    "audit_hash": "0ff1288eba99ac279b0196349aaae14a58c6ac1af4d9ecee94a64085bc77d2fb",
-    "audit_id": "043f4632a33976b3890c3c6e241d533318def4985a3c97ccf3092f7bee7a97ec",
+    "audit_hash": "92dd1b33402c11fc961bcb7ee2907e16bb451c54db6289fe7cdf30b423753953",
+    "audit_id": "50ec6d7e7aef2e359e21d1355e1bf708b0f9015316e904f60008c85955a9a510",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 71,
+    "covered_authority_kind_count": 72,
     "missing_authority_kind_count": 0,
     "missing_task_count_by_authority_kind": {},
-    "required_authority_kind_count": 71,
+    "required_authority_kind_count": 72,
     "selected_covered_task_count": 0,
     "selected_missing_task_count": 0,
     "selected_task_count": 0,
     "source_manifest_status": "complete",
     "task_count_by_authority_kind": {},
     "task_count_by_phase": {},
-    "total_authority_unit_count": 71
+    "total_authority_unit_count": 72
   },
   "tasks": []
 }

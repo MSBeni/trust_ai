@@ -206,6 +206,7 @@ def verify_temporal_holdout_manifest(
     contract: dict[str, Any] | None = None,
     replay: dict[str, Any] | None = None,
     replay_source_path: str | Path | None = None,
+    replay_source_bytes: bytes | None = None,
     key: str | None = None,
     keyring: dict[str, Any] | None = None,
 ) -> TemporalHoldoutVerification:
@@ -372,12 +373,20 @@ def verify_temporal_holdout_manifest(
     if artifact is not None:
         if not isinstance(artifact, dict):
             errors.append("temporal holdout replay_source_artifact must be an object")
-        elif replay_source_path is None:
-            errors.append("temporal holdout replay_source_artifact requires replay_source_path for byte replay")
+        elif replay_source_path is None and replay_source_bytes is None:
+            errors.append("temporal holdout replay_source_artifact requires replay_source_path or replay_source_bytes for byte replay")
         else:
             try:
-                replay_for_artifact = replay if replay is not None else load_shadow_replay(replay_source_path)
-                expected_artifact = _traffic_replay_source_artifact(replay_source_path, replay_for_artifact)
+                if replay_source_bytes is not None:
+                    replay_for_artifact = replay if replay is not None else _load_shadow_replay_from_bytes(replay_source_bytes)
+                    expected_artifact = _traffic_replay_source_artifact_from_bytes(
+                        str(artifact.get("path") or ""),
+                        replay_source_bytes,
+                        replay_for_artifact,
+                    )
+                else:
+                    replay_for_artifact = replay if replay is not None else load_shadow_replay(replay_source_path)
+                    expected_artifact = _traffic_replay_source_artifact(replay_source_path, replay_for_artifact)
             except (OSError, ValueError) as exc:
                 errors.append(f"temporal holdout replay_source_artifact invalid: {exc}")
             else:
@@ -387,7 +396,7 @@ def verify_temporal_holdout_manifest(
                     errors.append("temporal holdout replay_source_artifact replay_hash mismatch")
                 if replay is None:
                     _verify_temporal_holdout_replay_bindings(manifest, records, replay_for_artifact, errors)
-    elif replay_source_path is not None:
+    elif replay_source_path is not None or replay_source_bytes is not None:
         warnings.append("temporal holdout replay source bytes were supplied but are not bound in this manifest")
     return TemporalHoldoutVerification(ok=not errors, errors=errors, warnings=warnings)
 
@@ -864,6 +873,7 @@ def verify_traffic_holdout_export(
     contract: dict[str, Any] | None = None,
     replay: dict[str, Any] | None = None,
     replay_source_path: str | Path | None = None,
+    replay_source_bytes: bytes | None = None,
     key: str | None = None,
 ) -> TrafficHoldoutExportVerification:
     errors: list[str] = []
@@ -1036,12 +1046,20 @@ def verify_traffic_holdout_export(
     if artifact is not None:
         if not isinstance(artifact, dict):
             errors.append("traffic holdout export replay_source_artifact must be an object")
-        elif replay_source_path is None:
-            errors.append("traffic holdout export replay_source_artifact requires replay_source_path for byte replay")
+        elif replay_source_path is None and replay_source_bytes is None:
+            errors.append("traffic holdout export replay_source_artifact requires replay_source_path or replay_source_bytes for byte replay")
         else:
             try:
-                replay_for_artifact = replay if replay is not None else load_shadow_replay(replay_source_path)
-                expected_artifact = _traffic_replay_source_artifact(replay_source_path, replay_for_artifact)
+                if replay_source_bytes is not None:
+                    replay_for_artifact = replay if replay is not None else _load_shadow_replay_from_bytes(replay_source_bytes)
+                    expected_artifact = _traffic_replay_source_artifact_from_bytes(
+                        str(artifact.get("path") or ""),
+                        replay_source_bytes,
+                        replay_for_artifact,
+                    )
+                else:
+                    replay_for_artifact = replay if replay is not None else load_shadow_replay(replay_source_path)
+                    expected_artifact = _traffic_replay_source_artifact(replay_source_path, replay_for_artifact)
             except (OSError, ValueError) as exc:
                 errors.append(f"traffic holdout export replay_source_artifact invalid: {exc}")
             else:
@@ -1051,7 +1069,7 @@ def verify_traffic_holdout_export(
                     errors.append("traffic holdout export replay_source_artifact replay hash mismatch")
                 if replay is None:
                     _verify_traffic_holdout_replay_bindings(receipt, records, replay_for_artifact, receipt_replay_ref, errors)
-    elif replay_source_path is not None:
+    elif replay_source_path is not None or replay_source_bytes is not None:
         warnings.append("traffic holdout export replay source bytes were supplied but are not bound in this receipt")
 
     return TrafficHoldoutExportVerification(ok=not errors, errors=errors, warnings=warnings)
@@ -1154,6 +1172,7 @@ def verify_traffic_completeness_receipt(
     traffic_export: dict[str, Any] | None = None,
     provider_export: dict[str, Any] | None = None,
     provider_export_path: str | Path | None = None,
+    provider_export_bytes: bytes | None = None,
     key: str | None = None,
 ) -> TrafficCompletenessVerification:
     errors: list[str] = []
@@ -1237,11 +1256,18 @@ def verify_traffic_completeness_receipt(
         if artifact is not None:
             if not isinstance(artifact, dict):
                 errors.append("traffic completeness provider_export_artifact must be an object")
-            elif provider_export_path is None:
-                errors.append("traffic completeness provider_export_artifact requires provider_export_path for byte replay")
+            elif provider_export_path is None and provider_export_bytes is None:
+                errors.append("traffic completeness provider_export_artifact requires provider_export_path or provider_export_bytes for byte replay")
             else:
                 try:
-                    expected_artifact = _traffic_provider_export_artifact(provider_export_path, provider_export)
+                    if provider_export_bytes is not None:
+                        expected_artifact = _traffic_provider_export_artifact_from_bytes(
+                            str(artifact.get("path") or ""),
+                            provider_export_bytes,
+                            provider_export,
+                        )
+                    else:
+                        expected_artifact = _traffic_provider_export_artifact(provider_export_path, provider_export)
                 except ValueError as exc:
                     errors.append(f"traffic completeness provider export artifact invalid: {exc}")
                 else:
@@ -1264,6 +1290,8 @@ def verify_traffic_completeness_receipt(
                 actor_ref=str(provider_exchange.get("actor_ref") or ""),
                 produced_at=str(receipt.get("produced_at") or ""),
                 provider_export_path=provider_export_path if isinstance(receipt.get("provider_export_artifact"), dict) else None,
+                provider_export_bytes=provider_export_bytes if isinstance(receipt.get("provider_export_artifact"), dict) else None,
+                provider_export_recorded_path=str(receipt.get("provider_export_artifact", {}).get("path") or "") if isinstance(receipt.get("provider_export_artifact"), dict) else None,
             )
         except (TypeError, ValueError) as exc:
             errors.append(f"traffic completeness source replay failed: {exc}")
@@ -1582,20 +1610,27 @@ def _traffic_replay_source_artifact(path: str | Path, replay: dict[str, Any]) ->
     target = Path(path)
     if not target.is_file():
         raise ValueError(f"traffic replay source artifact file missing: {path}")
-    data = target.read_bytes()
+    return _traffic_replay_source_artifact_from_bytes(_traffic_artifact_path(target), target.read_bytes(), replay)
+
+
+def _load_shadow_replay_from_bytes(data: bytes) -> dict[str, Any]:
     try:
         parsed = json.loads(data.decode("utf-8-sig"))
     except json.JSONDecodeError as exc:
         raise ValueError(f"traffic replay source artifact JSON invalid: {exc}") from exc
     if not isinstance(parsed, dict):
         raise ValueError("traffic replay source artifact must contain an object")
-    normalized_from_file = load_shadow_replay(target)
-    if normalized_from_file != replay:
+    return parsed
+
+
+def _traffic_replay_source_artifact_from_bytes(recorded_path: str, data: bytes, replay: dict[str, Any]) -> dict[str, Any]:
+    parsed = _load_shadow_replay_from_bytes(data)
+    if parsed != replay:
         raise ValueError("traffic replay source artifact content does not match supplied replay object")
     records = _shadow_records(replay)
     record_hashes = [content_hash(record) for record in records]
     body = {
-        "path": _traffic_artifact_path(target),
+        "path": recorded_path,
         "sha256": "sha256:" + sha256(data).hexdigest(),
         "size_bytes": len(data),
         "content_hash": content_hash(parsed),
@@ -1693,10 +1728,19 @@ def _build_traffic_completeness_body(
     actor_ref: str,
     produced_at: str,
     provider_export_path: str | Path | None = None,
+    provider_export_bytes: bytes | None = None,
+    provider_export_recorded_path: str | None = None,
 ) -> dict[str, Any]:
     traffic_summary = _traffic_export_summary(traffic_export)
     provider_summary = _traffic_provider_export_summary(provider_export)
-    provider_artifact = _traffic_provider_export_artifact(provider_export_path, provider_export) if provider_export_path is not None else None
+    if provider_export_bytes is not None:
+        provider_artifact = _traffic_provider_export_artifact_from_bytes(
+            provider_export_recorded_path or "",
+            provider_export_bytes,
+            provider_export,
+        )
+    else:
+        provider_artifact = _traffic_provider_export_artifact(provider_export_path, provider_export) if provider_export_path is not None else None
     stream_records = _traffic_provider_records(provider_export, "stream_records")
     audit_records = _traffic_provider_records(provider_export, "audit_records")
     matched_records, extra_provider_records = _traffic_completeness_record_matches(traffic_export, stream_records)
@@ -1862,7 +1906,10 @@ def _traffic_provider_export_artifact(path: str | Path, provider_export: dict[st
     target = Path(path)
     if not target.is_file():
         raise ValueError(f"provider export artifact file missing: {path}")
-    data = target.read_bytes()
+    return _traffic_provider_export_artifact_from_bytes(_traffic_artifact_path(target), target.read_bytes(), provider_export)
+
+
+def _traffic_provider_export_artifact_from_bytes(recorded_path: str, data: bytes, provider_export: dict[str, Any]) -> dict[str, Any]:
     try:
         parsed = json.loads(data.decode("utf-8-sig"))
     except json.JSONDecodeError as exc:
@@ -1873,7 +1920,7 @@ def _traffic_provider_export_artifact(path: str | Path, provider_export: dict[st
     if parsed_hash != content_hash(provider_export):
         raise ValueError("provider export artifact content does not match supplied provider export object")
     body = {
-        "path": _traffic_artifact_path(target),
+        "path": recorded_path,
         "sha256": "sha256:" + sha256(data).hexdigest(),
         "size_bytes": len(data),
         "content_hash": parsed_hash,

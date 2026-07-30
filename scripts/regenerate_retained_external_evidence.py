@@ -529,6 +529,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-standards-body.json",
     },
+    "shadow-replay-temporal-holdout:customer": {
+        "source_uri": "https://customer.example/exports/aitrade/shadow-holdout/customer-acceptance",
+        "description": "Retained customer acceptance export for shadow replay temporal holdout review evidence",
+        "artifact": "examples/aitrade/external-evidence/shadow-holdout-customer-source-snapshot.json",
+        "source_file": "examples/aitrade/shadow-holdout-customer-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example Aitrade Customer",
+        "subject": "aitrade shadow replay temporal holdout customer acceptance",
+        "issued_at": "2026-07-03T13:12:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/shadow-holdout-customer-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-customer.json",
+    },
     "byoc-self-hosted:ci-run": {
         "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
         "description": "Retained GitHub Actions export for BYOC deployment, operator, and authority validation CI evidence",
@@ -1570,8 +1584,12 @@ def verify_retained_artifacts() -> None:
 
 def assert_retained_counts() -> None:
     retained_count = len(RETAINED_SOURCES)
-    remaining_count = 71 - retained_count
     manifest = json_load(DIR / "retained-external-evidence-manifest.json")
+    total_authority_count = (
+        manifest["summary"]["covered_authority_kind_count"]
+        + manifest["summary"]["missing_authority_kind_count"]
+    )
+    remaining_count = total_authority_count - retained_count
     plan = json_load(DIR / "remaining-external-evidence-plan.json")
     source_map = json_load(DIR / "remaining-external-evidence-source-map-template.json")
     gap_report = json_load(DIR / "retained-external-evidence-gap-report.json")
