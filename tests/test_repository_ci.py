@@ -88,6 +88,15 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("tests.test_tamper_stress", workflow)
         self.assertIn("tests.test_standards", workflow)
 
+    def test_retained_evidence_guard_runs_before_worklist_verification(self):
+        workflow = PYTHON_CI.read_text(encoding="utf-8")
+        guard = "python scripts/regenerate_retained_external_evidence.py --verify-only"
+        worklist = "python -m trustai external-evidence-verify examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+
+        self.assertIn(guard, workflow)
+        self.assertIn(worklist, workflow)
+        self.assertLess(workflow.index(guard), workflow.index(worklist))
+
     def test_public_repo_has_python_and_go_ci_workflows(self):
         self.assertTrue(PYTHON_CI.exists())
         self.assertTrue(GO_CI.exists())
