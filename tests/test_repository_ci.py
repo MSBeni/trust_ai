@@ -103,6 +103,13 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("--production-replacement-worklist", cli)
         self.assertIn("--production-replacement-worklist-limit", cli)
         self.assertIn("production_replacement_worklist", cli)
+        readme = README.read_text(encoding="utf-8")
+        coverage = (ROOT / "docs" / "architecture" / "roadmap-coverage.md").read_text(encoding="utf-8")
+        retained_bootstrap = "--production-replacement-artifact examples/aitrade/external-evidence/retained-external-evidence-production-replacement-plan.json"
+        self.assertIn(retained_bootstrap, readme)
+        self.assertIn(retained_bootstrap, coverage)
+        self.assertIn("--db .trustai/control-plane.sqlite --rebuild", readme)
+        self.assertIn("--db .trustai/control-plane.sqlite --rebuild", coverage)
 
     def test_retained_evidence_guard_runs_before_worklist_verification(self):
         workflow = PYTHON_CI.read_text(encoding="utf-8")
