@@ -96,6 +96,34 @@ class ProviderWebhookTests(unittest.TestCase):
         self.assertEqual(artifact_sha, receipt["payload_artifact"]["sha256"])
         self.assertEqual(len(raw_body), receipt["payload_artifact"]["size_bytes"])
 
+    def test_github_webhook_payload_artifact_path_is_checkout_relative_when_possible(self):
+        raw_body = b'{"action":"completed","check_suite":{"id":42}}'
+        secret = "github-webhook-secret"
+        headers = _github_headers(secret, raw_body)
+
+        with tempfile.TemporaryDirectory(dir=ROOT) as tmp_dir:
+            body_path = Path(tmp_dir) / "github-webhook.json"
+            body_path.write_bytes(raw_body)
+            receipt = build_provider_webhook_receipt(
+                "github",
+                raw_body,
+                headers,
+                secret,
+                received_at="2026-07-08T00:00:00Z",
+                body_artifact_path=body_path,
+            )
+
+            self.assertEqual(body_path.relative_to(ROOT).as_posix(), receipt["payload_artifact"]["path"])
+            self.assertTrue(
+                verify_provider_webhook_receipt(
+                    receipt,
+                    raw_body,
+                    headers=headers,
+                    secret=secret,
+                    body_artifact_path=body_path,
+                ).ok
+            )
+
     def test_github_webhook_detects_payload_artifact_byte_tamper(self):
         raw_body = b'{"action":"completed","check_suite":{"id":42}}'
         equivalent_body = b'{\n  "action": "completed",\n  "check_suite": {\n    "id": 42\n  }\n}'

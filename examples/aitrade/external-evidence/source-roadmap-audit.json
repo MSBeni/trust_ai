@@ -1,5 +1,5 @@
 {
-  "audit_id": "4f2085ef62a49c4e0c75dbf6a4115fc2eb1d1a3896cd3478a1338ed4c2ebecea",
+  "audit_id": "183a36a2443b1b40a611964f2f4deca63a3fb2d7d999556652b1ff936648aa7b",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -772,7 +772,7 @@
         {
           "path": "src/trustai/provider_webhook.py",
           "present": true,
-          "sha256": "sha256:834d1e54ad45d77733bf4d24f93d269a1fa9a9e533713c58bcad3f0ae717e19f"
+          "sha256": "sha256:107084c03d77226d0797519369e23b565c40bc33fbdcf469289638038d57a875"
         },
         {
           "path": "docs/specs/provider-webhook-v0.1.md",
@@ -832,7 +832,7 @@
         {
           "path": "tests/test_provider_delivery.py",
           "present": true,
-          "sha256": "sha256:9c4ed4864074766c9c95e8a008a24d6e49da7c7c2f4043c30142076786706efd"
+          "sha256": "sha256:7dac7e12a250d3597a6e557f58fa48b1ab96a46f24ae430185f6f9237fa4c31d"
         },
         {
           "path": "tests/test_provider_delivery_authority.py",
@@ -852,7 +852,7 @@
         {
           "path": "tests/test_provider_webhook.py",
           "present": true,
-          "sha256": "sha256:55a5724b4b5d7f8374eca4b6b5799c740aa56a0bcd975ae4b8ca2a33373c74d0"
+          "sha256": "sha256:085b4a697d40d1c0dfb1f7c69c2d072920fe7454eb0ba7193b42bfcc0b4fafe3"
         }
       ],
       "evidence_count": 24,

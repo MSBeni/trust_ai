@@ -278,6 +278,16 @@ def write_provider_webhook_receipt(path: str | Path, receipt: dict[str, Any]) ->
     target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def _provider_webhook_artifact_path(path: Path) -> str:
+    if not path.is_absolute():
+        return path.as_posix()
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
 def _provider_webhook_payload_artifact(path: str | Path, body: bytes | str) -> dict[str, Any]:
     target = Path(path)
     if not target.is_file():
@@ -287,7 +297,7 @@ def _provider_webhook_payload_artifact(path: str | Path, body: bytes | str) -> d
     if data != body_bytes:
         raise ValueError("provider webhook payload artifact bytes do not match supplied body")
     artifact_body = {
-        "path": str(path).replace("\\", "/"),
+        "path": _provider_webhook_artifact_path(target),
         "sha256": sha256_hex(data),
         "size_bytes": len(data),
     }

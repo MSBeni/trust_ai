@@ -134,6 +134,40 @@ class ProviderDeliveryTests(unittest.TestCase):
             self.assertEqual(artifact, entry["payload"]["payload_artifact"])
             self.assertTrue(chain.verify_all().ok)
 
+    def test_delivery_artifact_paths_are_checkout_relative_when_possible(self):
+        pack = self._pack()
+        payload = build_promotion_check_payload(
+            pack,
+            verify_proof_pack(pack),
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        response_body = {"id": "check-run-123", "status": "completed", "conclusion": "success"}
+        with tempfile.TemporaryDirectory(dir=ROOT) as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            payload_path = tmp_path / "github-check-run-payload.json"
+            response_path = tmp_path / "github-check-run-response.json"
+            payload_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+            response_path.write_text(json.dumps(response_body, indent=2, sort_keys=True), encoding="utf-8")
+
+            delivery = build_provider_delivery(
+                payload,
+                endpoint_base="https://api.github.com",
+                credential_ref="env:GITHUB_TOKEN",
+                mode="recorded-response",
+                response_status=201,
+                response_body=response_body,
+                delivered_at="2026-07-04T00:00:00Z",
+                payload_artifact_path=payload_path,
+                response_artifact_path=response_path,
+            )
+
+            self.assertEqual(payload_path.relative_to(ROOT).as_posix(), delivery["payload_artifact"]["path"])
+            self.assertEqual(response_path.relative_to(ROOT).as_posix(), delivery["response_artifact"]["path"])
+            self.assertTrue(verify_provider_delivery(delivery, payload, payload_artifact_path=payload_path, response_artifact_path=response_path).ok)
+
     def test_delivery_detects_retained_payload_artifact_byte_tamper(self):
         pack = self._pack()
         payload = build_promotion_check_payload(

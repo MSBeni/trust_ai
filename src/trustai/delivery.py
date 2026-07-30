@@ -413,6 +413,16 @@ def _payload_hash(payload: dict[str, Any]) -> str:
     return content_hash(without_keys(payload, "payload_hash"))
 
 
+def _provider_artifact_path(path: Path) -> str:
+    if not path.is_absolute():
+        return path.as_posix()
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
 def _payload_artifact(path: str | Path, payload: dict[str, Any]) -> dict[str, Any]:
     target = Path(path)
     if not target.is_file():
@@ -430,7 +440,7 @@ def _payload_artifact_from_bytes(path: str | Path, raw: bytes, payload: dict[str
     if content_hash(parsed) != content_hash(payload):
         raise ValueError("provider payload artifact content does not match supplied payload")
     artifact_body = {
-        "path": str(path).replace("\\", "/"),
+        "path": _provider_artifact_path(Path(path)),
         "sha256": sha256_hex(raw),
         "size_bytes": len(raw),
         "content_hash": content_hash(parsed),
@@ -475,7 +485,7 @@ def _response_artifact_from_bytes(path: str | Path, raw: bytes, expected_body_ha
     if content_hash_value != expected_body_hash:
         raise ValueError("provider response artifact content does not match recorded response body_hash")
     artifact_body = {
-        "path": str(path).replace("\\", "/"),
+        "path": _provider_artifact_path(Path(path)),
         "sha256": sha256_hex(raw),
         "size_bytes": len(raw),
         "content_type": content_type,
