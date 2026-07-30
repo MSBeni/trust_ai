@@ -33,6 +33,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
@@ -56,6 +57,7 @@ from trustai.external_evidence import (
     build_external_evidence_production_replacement_owner_packet_status,
     build_external_evidence_production_replacement_intake_template,
     build_external_evidence_production_replacement_submission_review,
+    build_external_evidence_production_replacement_closure,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
     build_external_evidence_source_map_template,
@@ -80,6 +82,7 @@ from trustai.external_evidence import (
     load_external_evidence_production_replacement_owner_packet_status,
     load_external_evidence_production_replacement_intake_template,
     load_external_evidence_production_replacement_submission_review,
+    load_external_evidence_production_replacement_closure,
     load_external_evidence_intake,
     load_external_evidence_intakes,
     load_external_evidence_source_snapshot,
@@ -101,6 +104,7 @@ from trustai.external_evidence import (
     render_external_evidence_production_replacement_owner_packet_status_markdown,
     render_external_evidence_production_replacement_intake_template_markdown,
     render_external_evidence_production_replacement_submission_review_markdown,
+    render_external_evidence_production_replacement_closure_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
     verify_external_evidence_manifest,
@@ -117,6 +121,7 @@ from trustai.external_evidence import (
     verify_external_evidence_production_replacement_owner_packet_status,
     verify_external_evidence_production_replacement_intake_template,
     verify_external_evidence_production_replacement_submission_review,
+    verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1530,17 +1535,37 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             require_live_source_uris=True,
         )
         submission_review_markdown = render_external_evidence_production_replacement_submission_review_markdown(submission_review)
+        production_closure = build_external_evidence_production_replacement_closure(
+            submission_review,
+            readiness,
+            generated_at="2026-07-09T00:09:30Z",
+        )
+        production_closure_result = verify_external_evidence_production_replacement_closure(
+            production_closure,
+            submission_review,
+            readiness,
+        )
+        production_closure_markdown = render_external_evidence_production_replacement_closure_markdown(production_closure)
+        strict_production_closure_result = verify_external_evidence_production_replacement_closure(
+            production_closure,
+            submission_review,
+            readiness,
+            require_closed=True,
+        )
 
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA, replacement_plan["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA, owner_packets["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA, owner_packet_status["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA, intake_template["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA, submission_review["schema"])
+        self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA, production_closure["schema"])
         self.assertTrue(result.ok, result.errors)
         self.assertTrue(owner_packets_result.ok, owner_packets_result.errors)
         self.assertTrue(owner_packet_status_result.ok, owner_packet_status_result.errors)
         self.assertTrue(intake_template_result.ok, intake_template_result.errors)
         self.assertTrue(submission_review_result.ok, submission_review_result.errors)
+        self.assertTrue(production_closure_result.ok, production_closure_result.errors)
+        self.assertFalse(strict_production_closure_result.ok)
         self.assertEqual("open", replacement_plan["summary"]["replacement_status"])
         self.assertEqual(1, replacement_plan["summary"]["task_count"])
         self.assertEqual(1, replacement_plan["summary"]["non_production_covered_authority_kind_count"])
@@ -1565,6 +1590,13 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(0, submission_review["summary"]["live_source_uri_count"])
         self.assertEqual(1, submission_review["summary"]["source_map_entry_count"])
         self.assertFalse(submission_review["summary"]["fulfilled_source_map_verification_ok"])
+        self.assertEqual("blocked", production_closure["summary"]["closure_status"])
+        self.assertEqual("not-ready", production_closure["summary"]["readiness_status"])
+        self.assertEqual(0, production_closure["summary"]["closed_task_count"])
+        self.assertEqual(1, production_closure["summary"]["blocked_task_count"])
+        self.assertEqual(1, production_closure["summary"]["blocked_review_task_count"])
+        self.assertEqual(1, production_closure["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(1, production_closure["summary"]["non_production_readiness_task_count"])
         self.assertEqual("oss-verifier-and-public-spec:ci-run", submission_review["task_reviews"][0]["task"])
         self.assertEqual("placeholder", submission_review["task_reviews"][0]["source_uri_status"])
         task = replacement_plan["tasks"][0]
@@ -1583,6 +1615,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertIn("Requests: 1", intake_template_markdown)
         self.assertIn("External Evidence Production Replacement Submission Review", submission_review_markdown)
         self.assertIn("Blocked tasks: 1", submission_review_markdown)
+        self.assertIn("External Evidence Production Replacement Closure", production_closure_markdown)
+        self.assertIn("Closed tasks: 0/1", production_closure_markdown)
 
         tampered = copy.deepcopy(replacement_plan)
         tampered["summary"]["task_count"] = 0
@@ -1607,6 +1641,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             submission_review_path = tmp_path / "replacement-submission-review.json"
             submission_review_markdown_path = tmp_path / "replacement-submission-review.md"
             fulfilled_source_map_path = tmp_path / "replacement-fulfilled-source-map.json"
+            closure_path = tmp_path / "replacement-closure.json"
+            closure_markdown_path = tmp_path / "replacement-closure.md"
             plan_all_path = tmp_path / "plan-all.json"
             write_roadmap_audit(audit_path, audit)
             write_external_evidence_manifest(manifest_path, manifest)
@@ -1812,6 +1848,56 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertNotEqual(0, not_ready.returncode)
             self.assertIn("not ready to collect", not_ready.stderr)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-closure",
+                    str(submission_review_path),
+                    str(readiness_path),
+                    "--generated-at",
+                    "2026-07-09T00:09:30Z",
+                    "--out",
+                    str(closure_path),
+                    "--markdown",
+                    str(closure_markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_closure = load_external_evidence_production_replacement_closure(closure_path)
+            self.assertEqual(production_closure, cli_closure)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-closure-verify",
+                    str(closure_path),
+                    str(submission_review_path),
+                    str(readiness_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            not_closed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-closure-verify",
+                    str(closure_path),
+                    str(submission_review_path),
+                    str(readiness_path),
+                    "--require-closed",
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(0, not_closed.returncode)
+            self.assertIn("not closed", not_closed.stderr)
     def test_external_evidence_intake_binds_artifact_to_collection_task(self):
         audit = build_roadmap_audit(ROOT)
         manifest = build_external_evidence_manifest(
@@ -2282,6 +2368,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         replacement_owner_packet_status = load_external_evidence_production_replacement_owner_packet_status(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-owner-packet-status.json")
         replacement_intake_template = load_external_evidence_production_replacement_intake_template(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-intake-template.json")
         replacement_submission_review = load_external_evidence_production_replacement_submission_review(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-submission-review.json")
+        replacement_closure = load_external_evidence_production_replacement_closure(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-closure.json")
         replacement_fulfilled_source_map = json.loads((ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-fulfilled-source-map.json").read_text(encoding="utf-8"))
         replacement_result = verify_external_evidence_production_replacement_plan(replacement_plan, readiness, manifest, audit, root=ROOT)
         replacement_owner_packets_result = verify_external_evidence_production_replacement_owner_packets(replacement_owner_packets, replacement_plan)
@@ -2306,7 +2393,13 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(replacement_owner_packets_result.ok, replacement_owner_packets_result.errors)
         self.assertTrue(replacement_owner_packet_status_result.ok, replacement_owner_packet_status_result.errors)
         self.assertTrue(replacement_intake_template_result.ok, replacement_intake_template_result.errors)
+        replacement_closure_result = verify_external_evidence_production_replacement_closure(
+            replacement_closure,
+            replacement_submission_review,
+            readiness,
+        )
         self.assertTrue(replacement_submission_review_result.ok, replacement_submission_review_result.errors)
+        self.assertTrue(replacement_closure_result.ok, replacement_closure_result.errors)
         self.assertEqual("open", replacement_plan["summary"]["replacement_status"])
         self.assertEqual(72, replacement_plan["summary"]["task_count"])
         self.assertEqual(72, replacement_plan["summary"]["non_production_covered_authority_kind_count"])
@@ -2330,6 +2423,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(0, replacement_submission_review["summary"]["live_source_uri_count"])
         self.assertEqual(72, replacement_submission_review["summary"]["source_map_entry_count"])
         self.assertFalse(replacement_submission_review["summary"]["fulfilled_source_map_verification_ok"])
+        self.assertEqual("blocked", replacement_closure["summary"]["closure_status"])
+        self.assertEqual("not-ready", replacement_closure["summary"]["readiness_status"])
+        self.assertEqual(72, replacement_closure["summary"]["task_count"])
+        self.assertEqual(0, replacement_closure["summary"]["closed_task_count"])
+        self.assertEqual(72, replacement_closure["summary"]["blocked_task_count"])
+        self.assertEqual(72, replacement_closure["summary"]["placeholder_source_uri_count"])
         self.assertEqual(72, replacement_fulfilled_source_map["summary"]["entry_count"])
         self.assertEqual(72, replacement_fulfilled_source_map["summary"]["placeholder_source_uri_count"])
 

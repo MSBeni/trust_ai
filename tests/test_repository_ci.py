@@ -13,6 +13,7 @@ RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evid
 RETAINED_EVIDENCE_MANIFEST = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-manifest.json"
 RETAINED_EVIDENCE_READINESS = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-readiness.json"
 PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-submission-review.json"
+PRODUCTION_REPLACEMENT_CLOSURE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-closure.json"
 TESTS_INIT = ROOT / "tests" / "__init__.py"
 
 
@@ -126,6 +127,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("retained-external-evidence-production-replacement-intake-template.json", script)
         self.assertIn("external-evidence-production-replacement-submission-review", script)
         self.assertIn("retained-external-evidence-production-replacement-submission-review.json", script)
+        self.assertIn("external-evidence-production-replacement-closure", script)
+        self.assertIn("retained-external-evidence-production-replacement-closure.json", script)
         self.assertIn("retained-external-evidence-production-replacement-fulfilled-source-map.json", script)
         self.assertTrue(TESTS_INIT.exists())
 
@@ -135,9 +138,11 @@ class RepositoryCiTests(unittest.TestCase):
         manifest = json.loads(RETAINED_EVIDENCE_MANIFEST.read_text(encoding="utf-8"))
         readiness = json.loads(RETAINED_EVIDENCE_READINESS.read_text(encoding="utf-8"))
         production_review = json.loads(PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW.read_text(encoding="utf-8"))
+        production_closure = json.loads(PRODUCTION_REPLACEMENT_CLOSURE.read_text(encoding="utf-8"))
         summary = manifest["summary"]
         readiness_summary = readiness["summary"]
         production_review_summary = production_review["summary"]
+        production_closure_summary = production_closure["summary"]
         required = summary["required_authority_kind_count"]
         covered = summary["covered_authority_kind_count"]
         production_usable = readiness_summary["production_usable_covered_authority_kind_count"]
@@ -152,12 +157,17 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertEqual("blocked", production_review_summary["review_status"])
         self.assertEqual(required, blocked_replacements)
         self.assertEqual(required, production_review_summary["placeholder_source_uri_count"])
+        self.assertEqual("blocked", production_closure_summary["closure_status"])
+        self.assertEqual(required, production_closure_summary["blocked_task_count"])
+        self.assertEqual(0, production_closure_summary["closed_task_count"])
+        self.assertEqual(required, production_closure_summary["placeholder_source_uri_count"])
         self.assertIn(f"{covered}/{required} authority units covered", readme)
         self.assertIn("readiness status is `not-ready`", readme)
         self.assertIn(f"{production_usable} authority units are production-usable", readme)
         self.assertIn(f"{blocked_replacements} production replacement tasks remain blocked", readme)
         self.assertIn("Strict production retained-evidence completion gate; expected to fail", readme)
         self.assertIn("external-evidence-production-replacement-submission-review-verify", readme)
+        self.assertIn("external-evidence-production-replacement-closure-verify", readme)
         self.assertNotIn("zero non-production retained authority units", readme)
         self.assertNotIn("expected to pass for the retained example set", readme)
         self.assertIn(f"required_authority_kind_count'] == {required}", readme)
@@ -175,6 +185,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("external-evidence-production-replacement-owner-packet-status", spec)
         self.assertIn("external-evidence-production-replacement-intake-template", spec)
         self.assertIn("external-evidence-production-replacement-submission-review", spec)
+        self.assertIn("external-evidence-production-replacement-closure", spec)
+        self.assertIn("external-evidence-production-replacement-closure-verify --require-closed", spec)
         self.assertIn("TODO://production-authority", spec)
         self.assertIn("--require-live-source-uris", spec)
         self.assertIn("--require-ready", spec)

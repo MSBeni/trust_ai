@@ -1200,6 +1200,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_owner_packet_status,
     build_external_evidence_production_replacement_intake_template,
     build_external_evidence_production_replacement_submission_review,
+    build_external_evidence_production_replacement_closure,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
     build_external_evidence_collection_plan,
@@ -1226,6 +1227,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_owner_packet_status,
     load_external_evidence_production_replacement_intake_template,
     load_external_evidence_production_replacement_submission_review,
+    load_external_evidence_production_replacement_closure,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_collection_run,
@@ -1252,6 +1254,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_owner_packet_status,
     verify_external_evidence_production_replacement_intake_template,
     verify_external_evidence_production_replacement_submission_review,
+    verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1287,6 +1290,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_intake_template_markdown,
     write_external_evidence_production_replacement_submission_review,
     write_external_evidence_production_replacement_submission_review_markdown,
+    write_external_evidence_production_replacement_closure,
+    write_external_evidence_production_replacement_closure_markdown,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
@@ -17209,6 +17214,80 @@ def cmd_external_evidence_production_replacement_submission_review_verify(args: 
         print(f"- {error}", file=sys.stderr)
     return 1
 
+
+def cmd_external_evidence_production_replacement_closure(args: argparse.Namespace) -> int:
+    try:
+        review = load_external_evidence_production_replacement_submission_review(args.review)
+        readiness = load_external_evidence_readiness_report(args.readiness)
+        closure = build_external_evidence_production_replacement_closure(
+            review,
+            readiness,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_closure(
+            closure,
+            review,
+            readiness,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement closure failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement closure verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_closure(args.out, closure)
+    if args.markdown:
+        write_external_evidence_production_replacement_closure_markdown(args.markdown, closure)
+        print(f"external evidence production replacement closure markdown: {args.markdown}")
+    summary = closure["summary"]
+    print(f"external evidence production replacement closure: {args.out}")
+    print(f"production replacement closure id: {closure['production_replacement_closure_id']}")
+    print(f"status: {summary['closure_status']}")
+    print(f"readiness status: {summary['readiness_status']}")
+    print(f"closed tasks: {summary['closed_task_count']}/{summary['task_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    if args.require_closed and summary.get("closure_status") != "closed":
+        print("external evidence production replacement closure is not closed", file=sys.stderr)
+        for blocker in closure.get("blockers", []):
+            print(f"- {blocker}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_external_evidence_production_replacement_closure_verify(args: argparse.Namespace) -> int:
+    try:
+        closure = load_external_evidence_production_replacement_closure(args.closure)
+        review = load_external_evidence_production_replacement_submission_review(args.review)
+        readiness = load_external_evidence_readiness_report(args.readiness)
+        result = verify_external_evidence_production_replacement_closure(
+            closure,
+            review,
+            readiness,
+            require_closed=args.require_closed,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement closure verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = closure.get("summary", {})
+        print(f"verified external evidence production replacement closure: {args.closure}")
+        print(f"production replacement closure id: {closure.get('production_replacement_closure_id')}")
+        print(f"status: {summary.get('closure_status')}")
+        print(f"readiness status: {summary.get('readiness_status')}")
+        print(f"closed tasks: {summary.get('closed_task_count', 0)}/{summary.get('task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement closure verification failed: {args.closure}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
 def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -28746,6 +28825,23 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_submission_review_verify.add_argument("--require-ready", action="store_true", help="exit non-zero unless the production replacement submission review is ready to collect")
     external_evidence_production_replacement_submission_review_verify.add_argument("--now")
     external_evidence_production_replacement_submission_review_verify.set_defaults(func=cmd_external_evidence_production_replacement_submission_review_verify)
+
+    external_evidence_production_replacement_closure = subparsers.add_parser("external-evidence-production-replacement-closure", help="write final closure status for production authority replacement tasks against a readiness report")
+    external_evidence_production_replacement_closure.add_argument("review")
+    external_evidence_production_replacement_closure.add_argument("readiness")
+    external_evidence_production_replacement_closure.add_argument("--require-closed", action="store_true", help="exit non-zero unless every submitted production replacement task is closed")
+    external_evidence_production_replacement_closure.add_argument("--generated-at")
+    external_evidence_production_replacement_closure.add_argument("--out", default="artifacts/external-evidence-production-replacement-closure.json")
+    external_evidence_production_replacement_closure.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-closure.md")
+    external_evidence_production_replacement_closure.set_defaults(func=cmd_external_evidence_production_replacement_closure)
+
+    external_evidence_production_replacement_closure_verify = subparsers.add_parser("external-evidence-production-replacement-closure-verify", help="verify production authority replacement closure against submission review and readiness")
+    external_evidence_production_replacement_closure_verify.add_argument("closure")
+    external_evidence_production_replacement_closure_verify.add_argument("review")
+    external_evidence_production_replacement_closure_verify.add_argument("readiness")
+    external_evidence_production_replacement_closure_verify.add_argument("--require-closed", action="store_true", help="exit non-zero unless every submitted production replacement task is closed")
+    external_evidence_production_replacement_closure_verify.set_defaults(func=cmd_external_evidence_production_replacement_closure_verify)
+
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")

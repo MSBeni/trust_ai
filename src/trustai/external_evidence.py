@@ -37,6 +37,7 @@ EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA = "trustai.external
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-production-replacement-owner-packet-status/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA = "trustai.external-evidence-production-replacement-intake-template/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA = "trustai.external-evidence-production-replacement-submission-review/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA = "trustai.external-evidence-production-replacement-closure/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
@@ -298,6 +299,13 @@ class ExternalEvidenceProductionReplacementIntakeTemplateVerification:
 
 @dataclass
 class ExternalEvidenceProductionReplacementSubmissionReviewVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementClosureVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -4401,6 +4409,272 @@ def verify_external_evidence_production_replacement_submission_review(
     if require_ready and summary.get("review_status") != "ready-to-collect":
         errors.append("production replacement submission review is not ready to collect")
     return ExternalEvidenceProductionReplacementSubmissionReviewVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def _external_evidence_production_replacement_closure_source_errors(
+    review: dict[str, Any],
+    readiness: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if review.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement submission review schema: {review.get('schema')}")
+    if review.get("production_replacement_submission_review_id") != content_hash(without_keys(review, "production_replacement_submission_review_id")):
+        errors.append("production_replacement_submission_review_id does not match canonical production replacement submission review body")
+    if readiness.get("schema") != EXTERNAL_EVIDENCE_READINESS_SCHEMA:
+        errors.append(f"unsupported external evidence readiness schema: {readiness.get('schema')}")
+    if readiness.get("readiness_id") != content_hash(without_keys(readiness, "readiness_id")):
+        errors.append("readiness_id does not match canonical readiness body")
+    review_summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
+    if review_summary.get("review_status") != "ready-to-collect":
+        warnings.append("production replacement submission review is not ready to collect")
+    readiness_summary = readiness.get("summary", {}) if isinstance(readiness.get("summary"), dict) else {}
+    if readiness_summary.get("readiness_status") != "ready":
+        warnings.append("external evidence readiness is not ready")
+    readiness_verification = readiness.get("verification", {}) if isinstance(readiness.get("verification"), dict) else {}
+    if readiness_verification.get("ok") is False:
+        errors.append("external evidence readiness verification reports source errors")
+    return errors, warnings
+
+
+def _external_evidence_production_replacement_closure_non_production_refs(readiness: dict[str, Any]) -> set[str]:
+    refs: set[str] = set()
+    units = readiness.get("non_production_covered_authority_units", [])
+    if not isinstance(units, list):
+        return refs
+    for unit in units:
+        if not isinstance(unit, dict):
+            continue
+        unit_ref = str(unit.get("unit_ref") or "").strip()
+        if unit_ref:
+            refs.add(unit_ref)
+    return refs
+
+
+def _external_evidence_production_replacement_closure_task_status(blockers: list[str]) -> str:
+    if not blockers:
+        return "closed"
+    if "source-errors" in blockers:
+        return "source-errors"
+    if "submission-review-blocked" in blockers:
+        return "submission-review-blocked"
+    if "placeholder-source-uri" in blockers:
+        return "placeholder-source-uri"
+    if "readiness-not-ready" in blockers:
+        return "readiness-not-ready"
+    if "non-production-readiness" in blockers:
+        return "non-production-readiness"
+    return "blocked"
+
+
+def _external_evidence_production_replacement_closure_next_actions(summary: dict[str, Any]) -> list[str]:
+    if summary.get("closure_status") == "closed":
+        return [
+            "Append the rebuilt production-ready external-evidence manifest and readiness proof to the roadmap evidence chain.",
+            "Publish the roadmap evidence bundle with the closed production replacement closure report.",
+        ]
+    actions: list[str] = []
+    if summary.get("placeholder_source_uri_count"):
+        actions.append("Replace production replacement placeholder source URIs with live authority-owned source URIs and rerun the submission review.")
+    if summary.get("blocked_review_task_count"):
+        actions.append("Resolve blocked submission-review tasks before collecting production replacement evidence.")
+    if summary.get("readiness_status") != "ready" or summary.get("non_production_readiness_task_count"):
+        actions.append("Collect verified production snapshots and intake receipts, rebuild the manifest, and rerun external-evidence-readiness with --require-ready.")
+    if summary.get("source_error_count"):
+        actions.append("Fix canonical source artifact errors before accepting the production replacement closure.")
+    if not actions:
+        actions.append("Resolve the production replacement closure blockers and rerun this report before claiming production authority coverage.")
+    return actions
+
+
+def build_external_evidence_production_replacement_closure(
+    review: dict[str, Any],
+    readiness: dict[str, Any],
+    *,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    source_errors, source_warnings = _external_evidence_production_replacement_closure_source_errors(review, readiness)
+    readiness_summary = readiness.get("summary", {}) if isinstance(readiness.get("summary"), dict) else {}
+    review_summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
+    readiness_status = str(readiness_summary.get("readiness_status") or readiness.get("readiness_status") or "")
+    non_production_refs = _external_evidence_production_replacement_closure_non_production_refs(readiness)
+    readiness_blockers = readiness.get("blockers", []) if isinstance(readiness.get("blockers"), list) else []
+
+    task_closures: list[dict[str, Any]] = []
+    tasks = review.get("task_reviews", [])
+    if not isinstance(tasks, list):
+        tasks = []
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+        requirement_id = str(task.get("requirement_id") or "")
+        authority_kind = str(task.get("authority_kind") or "")
+        unit_ref = str(task.get("task") or (f"{requirement_id}:{authority_kind}" if requirement_id and authority_kind else ""))
+        blockers: list[str] = []
+        source_uri = str(task.get("source_uri") or "")
+        if task.get("source_uri_status") != "live" or _source_map_is_placeholder_uri(source_uri):
+            blockers.append("placeholder-source-uri")
+        if task.get("review_status") != "ready-to-collect":
+            blockers.append("submission-review-blocked")
+        if unit_ref in non_production_refs:
+            blockers.append("non-production-readiness")
+        if readiness_status != "ready":
+            blockers.append("readiness-not-ready")
+        if source_errors:
+            blockers.append("source-errors")
+        task_closures.append(
+            {
+                "task": unit_ref or None,
+                "task_ref": task.get("task_ref"),
+                "owner_hint": task.get("owner_hint"),
+                "requirement_id": requirement_id or None,
+                "authority_kind": authority_kind or None,
+                "source_uri": source_uri,
+                "source_uri_status": "live" if task.get("source_uri_status") == "live" and not _source_map_is_placeholder_uri(source_uri) else "placeholder",
+                "review_status": task.get("review_status"),
+                "readiness_status": readiness_status,
+                "closure_status": _external_evidence_production_replacement_closure_task_status(blockers),
+                "snapshot_out": task.get("snapshot_out"),
+                "intake_out": task.get("intake_out"),
+                "blocking_reasons": blockers,
+            }
+        )
+
+    task_count = len(task_closures)
+    closed_task_count = sum(1 for task in task_closures if task.get("closure_status") == "closed")
+    placeholder_count = sum(1 for task in task_closures if "placeholder-source-uri" in task.get("blocking_reasons", []))
+    blocked_review_task_count = sum(1 for task in task_closures if "submission-review-blocked" in task.get("blocking_reasons", []))
+    non_production_readiness_task_count = sum(1 for task in task_closures if "non-production-readiness" in task.get("blocking_reasons", []))
+    readiness_not_ready_task_count = sum(1 for task in task_closures if "readiness-not-ready" in task.get("blocking_reasons", []))
+    source_error_count = len(source_errors)
+    if closed_task_count == task_count and source_error_count == 0 and readiness_status == "ready":
+        closure_status = "closed"
+    elif closed_task_count:
+        closure_status = "partial"
+    else:
+        closure_status = "blocked"
+
+    summary = {
+        "closure_status": closure_status,
+        "readiness_status": readiness_status,
+        "review_status": review_summary.get("review_status"),
+        "task_count": task_count,
+        "closed_task_count": closed_task_count,
+        "blocked_task_count": task_count - closed_task_count,
+        "ready_review_task_count": int(review_summary.get("ready_task_count") or 0),
+        "blocked_review_task_count": blocked_review_task_count,
+        "placeholder_source_uri_count": placeholder_count,
+        "live_source_uri_count": task_count - placeholder_count,
+        "readiness_not_ready_task_count": readiness_not_ready_task_count,
+        "non_production_readiness_task_count": non_production_readiness_task_count,
+        "production_usable_covered_authority_kind_count": int(readiness_summary.get("production_usable_covered_authority_kind_count") or 0),
+        "non_production_covered_authority_kind_count": int(readiness_summary.get("non_production_covered_authority_kind_count") or 0),
+        "readiness_blocking_issue_count": int(readiness_summary.get("blocking_issue_count") or len(readiness_blockers)),
+        "source_error_count": source_error_count,
+        "source_warning_count": len(source_warnings),
+    }
+    blockers: list[str] = []
+    if source_error_count:
+        blockers.append("source production replacement closure artifacts do not verify")
+    if readiness_status != "ready":
+        blockers.append(f"external evidence readiness is {readiness_status or 'unknown'}")
+    if blocked_review_task_count:
+        blockers.append(f"{blocked_review_task_count} submitted production replacement tasks are not ready to collect")
+    if placeholder_count:
+        blockers.append(f"{placeholder_count} production replacement tasks still use placeholder source_uri values")
+    if non_production_readiness_task_count:
+        blockers.append(f"{non_production_readiness_task_count} production replacement tasks remain non-production in readiness")
+    if readiness_blockers:
+        blockers.extend(str(blocker) for blocker in readiness_blockers)
+
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "verification_options": {},
+        "sources": {
+            "production_replacement_submission_review": _external_evidence_review_source_record(
+                review,
+                "production_replacement_submission_review_id",
+                "production_replacement_submission_review_hash",
+            ),
+            "readiness": _external_evidence_review_source_record(readiness, "readiness_id", "readiness_hash"),
+        },
+        "summary": summary,
+        "task_closures": task_closures,
+        "readiness_blockers": readiness_blockers,
+        "verification": {
+            "ok": source_error_count == 0,
+            "errors": source_errors,
+            "warnings": source_warnings,
+            "error_count": len(source_errors),
+            "warning_count": len(source_warnings),
+        },
+        "blockers": blockers,
+        "next_actions": _external_evidence_production_replacement_closure_next_actions(summary),
+        "commands": {
+            "verify_closure": "python -m trustai external-evidence-production-replacement-closure-verify <closure.json> <submission-review.json> <readiness.json> --require-closed",
+            "prove_readiness": "python -m trustai external-evidence-readiness-verify <readiness.json> <gap-report.json> <manifest.json> <plan.json> <source-map.json> <roadmap-audit.json> --require-ready",
+            "append_after_closed": "python -m trustai external-evidence-append <rebuilt-manifest.json> <roadmap-audit.json> --require-live-source-uris --require-source-snapshot-artifacts",
+        },
+        "limitations": [
+            "This closure report proves whether submitted production replacement tasks can be accepted as closed against a supplied readiness report; it does not collect evidence by itself.",
+            "Closure requires live source URIs in the submission review and a rebuilt readiness report whose status is ready.",
+            "Retained/reference evidence intentionally keeps this closure blocked until production authority evidence replaces the fixtures.",
+        ],
+    }
+    return {**body, "production_replacement_closure_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_closure(
+    closure: dict[str, Any],
+    review: dict[str, Any],
+    readiness: dict[str, Any],
+    *,
+    require_closed: bool = False,
+) -> ExternalEvidenceProductionReplacementClosureVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if closure.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement closure schema: {closure.get('schema')}")
+    if closure.get("production_replacement_closure_id") != content_hash(without_keys(closure, "production_replacement_closure_id")):
+        errors.append("production_replacement_closure_id does not match canonical production replacement closure body")
+    if closure.get("verification_options") != {}:
+        errors.append("verification_options do not match verifier options")
+    sources = closure.get("sources") if isinstance(closure.get("sources"), dict) else {}
+    if sources.get("production_replacement_submission_review") != _external_evidence_review_source_record(
+        review,
+        "production_replacement_submission_review_id",
+        "production_replacement_submission_review_hash",
+    ):
+        errors.append("production replacement closure source submission review does not match supplied review")
+    if sources.get("readiness") != _external_evidence_review_source_record(readiness, "readiness_id", "readiness_hash"):
+        errors.append("production replacement closure source readiness does not match supplied readiness")
+    expected = build_external_evidence_production_replacement_closure(
+        review,
+        readiness,
+        generated_at=str(closure.get("generated_at") or ""),
+    )
+    if without_keys(closure, "production_replacement_closure_id") != without_keys(expected, "production_replacement_closure_id"):
+        errors.append("production replacement closure body does not match supplied submission review and readiness report")
+    expected_warnings = expected.get("verification", {}).get("warnings", [])
+    if isinstance(expected_warnings, list):
+        warnings.extend(str(warning) for warning in expected_warnings)
+    summary = closure.get("summary", {}) if isinstance(closure.get("summary"), dict) else {}
+    if summary.get("placeholder_source_uri_count"):
+        warnings.append(f"production replacement closure contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+    if summary.get("readiness_status") != "ready":
+        warnings.append(f"production replacement closure readiness is {summary.get('readiness_status')}")
+    if require_closed and summary.get("closure_status") != "closed":
+        errors.append(
+            "production replacement closure is not closed: "
+            f"closed_tasks={summary.get('closed_task_count', 0)}, "
+            f"blocked_tasks={summary.get('blocked_task_count', 0)}, "
+            f"readiness_status={summary.get('readiness_status')}, "
+            f"placeholder_source_uris={summary.get('placeholder_source_uri_count', 0)}"
+        )
+    return ExternalEvidenceProductionReplacementClosureVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
 def build_external_evidence_source_snapshot(
     *,
     source_uri: str,
@@ -5843,6 +6117,23 @@ def write_external_evidence_production_replacement_submission_review_markdown(pa
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_production_replacement_submission_review_markdown(review), encoding="utf-8")
 
+
+def write_external_evidence_production_replacement_closure(path: str | Path, closure: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(closure, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_closure(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_closure_markdown(path: str | Path, closure: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_closure_markdown(closure), encoding="utf-8")
+
+
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -6845,6 +7136,72 @@ Status filter: {plan.get('status_filter', '')}
 |---|---|---|---|---|---|---|---|
 {task_rows or "| - | - | - | - | - | - | - | - |"}
 """
+
+def render_external_evidence_production_replacement_closure_markdown(closure: dict[str, Any]) -> str:
+    summary = closure.get("summary", {}) if isinstance(closure.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Closure",
+        "",
+        f"- Closure ID: `{closure.get('production_replacement_closure_id')}`",
+        f"- Generated at: `{closure.get('generated_at')}`",
+        f"- Status: `{summary.get('closure_status')}`",
+        f"- Readiness status: `{summary.get('readiness_status')}`",
+        f"- Review status: `{summary.get('review_status')}`",
+        f"- Closed tasks: {summary.get('closed_task_count', 0)}/{summary.get('task_count', 0)}",
+        f"- Blocked review tasks: {summary.get('blocked_review_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Non-production readiness tasks: {summary.get('non_production_readiness_task_count', 0)}",
+        "",
+        "## Task Closure",
+        "",
+        "| Task | Owner | Authority | Review | Readiness | Closure | Blocking Reasons |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    tasks = closure.get("task_closures", [])
+    if isinstance(tasks, list):
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            reasons = task.get("blocking_reasons", []) if isinstance(task.get("blocking_reasons"), list) else []
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(task.get('task'))}`",
+                        _markdown_cell(task.get("owner_hint")),
+                        f"`{_markdown_cell(task.get('authority_kind'))}`",
+                        f"`{_markdown_cell(task.get('review_status'))}`",
+                        f"`{_markdown_cell(task.get('readiness_status'))}`",
+                        f"`{_markdown_cell(task.get('closure_status'))}`",
+                        _markdown_code_list(reasons),
+                    ]
+                )
+                + " |"
+            )
+    blockers = closure.get("blockers", [])
+    lines.extend(["", "## Blockers", ""])
+    if isinstance(blockers, list) and blockers:
+        lines.extend(f"- {_markdown_cell(blocker)}" for blocker in blockers)
+    else:
+        lines.append("- None")
+    next_actions = closure.get("next_actions", [])
+    lines.extend(["", "## Next Actions", ""])
+    if isinstance(next_actions, list) and next_actions:
+        lines.extend(f"- {_markdown_cell(action)}" for action in next_actions)
+    else:
+        lines.append("- None")
+    verification = closure.get("verification", {}) if isinstance(closure.get("verification"), dict) else {}
+    lines.extend(["", "## Verification", ""])
+    lines.append(f"- Source errors: {verification.get('error_count', 0)}")
+    lines.append(f"- Source warnings: {verification.get('warning_count', 0)}")
+    limitations = closure.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
 
 def render_roadmap_evidence_markdown(report: dict[str, Any]) -> str:
     summary = report.get("summary", {})

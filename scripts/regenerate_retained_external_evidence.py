@@ -1329,6 +1329,17 @@ def refresh_retained_artifacts() -> None:
         "--fulfilled-source-map-out",
         path("retained-external-evidence-production-replacement-fulfilled-source-map.json"),
     )
+    run(
+        "external-evidence-production-replacement-closure",
+        path("retained-external-evidence-production-replacement-submission-review.json"),
+        path("retained-external-evidence-readiness.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-closure.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-closure.md"),
+    )
 
 
 def write_deterministic_source_roadmap_audit() -> None:
@@ -1673,6 +1684,12 @@ def verify_retained_artifacts() -> None:
         path("source-external-evidence-plan-all.json"),
         "--require-live-source-uris",
     )
+    run(
+        "external-evidence-production-replacement-closure-verify",
+        path("retained-external-evidence-production-replacement-closure.json"),
+        path("retained-external-evidence-production-replacement-submission-review.json"),
+        path("retained-external-evidence-readiness.json"),
+    )
     assert_retained_counts()
     verify_retained_collection_chain()
 
@@ -1701,6 +1718,7 @@ def assert_retained_counts() -> None:
     production_replacement_owner_packet_status = json_load(DIR / "retained-external-evidence-production-replacement-owner-packet-status.json")
     production_replacement_intake_template = json_load(DIR / "retained-external-evidence-production-replacement-intake-template.json")
     production_replacement_submission_review = json_load(DIR / "retained-external-evidence-production-replacement-submission-review.json")
+    production_replacement_closure = json_load(DIR / "retained-external-evidence-production-replacement-closure.json")
     production_replacement_fulfilled_source_map = json_load(DIR / "retained-external-evidence-production-replacement-fulfilled-source-map.json")
     remaining_package_count = len(work_package.get("packages", []))
     expected_review_status = "ready-to-collect" if remaining_count == 0 else "blocked"
@@ -1760,6 +1778,12 @@ def assert_retained_counts() -> None:
         (production_replacement_submission_review["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement submission review placeholder URI count"),
         (production_replacement_submission_review["summary"]["live_source_uri_count"], 0, "production replacement submission review live URI count"),
         (production_replacement_submission_review["summary"]["fulfilled_source_map_verification_ok"], False, "production replacement submission review source-map verification status"),
+        (production_replacement_closure["summary"]["closure_status"], "blocked", "production replacement closure status"),
+        (production_replacement_closure["summary"]["readiness_status"], expected_readiness_status, "production replacement closure readiness status"),
+        (production_replacement_closure["summary"]["task_count"], expected_non_production_count, "production replacement closure task count"),
+        (production_replacement_closure["summary"]["closed_task_count"], 0, "production replacement closure closed task count"),
+        (production_replacement_closure["summary"]["blocked_task_count"], expected_non_production_count, "production replacement closure blocked task count"),
+        (production_replacement_closure["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement closure placeholder URI count"),
         (production_replacement_fulfilled_source_map["summary"]["entry_count"], expected_non_production_count, "production replacement fulfilled source-map entry count"),
         (production_replacement_fulfilled_source_map["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement fulfilled source-map placeholder URI count"),
     ]

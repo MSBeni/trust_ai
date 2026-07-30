@@ -440,13 +440,24 @@ placeholder or example source URIs MUST produce blockers; with
 has live source URIs and the fulfilled source map verifies under the requested
 snapshot options.
 
+`external-evidence-production-replacement-closure` emits
+`trustai.external-evidence-production-replacement-closure/0.1` from the
+submission review and readiness report. It binds the submitted replacement task
+set to the current readiness proof, closes only when every task is ready,
+source URIs are live, and readiness is `ready`, and leaves retained/reference
+fixtures blocked. `external-evidence-production-replacement-closure-verify
+--require-closed` MUST fail until that final production authority boundary is
+closed.
+
 A ready production replacement submission review is still not final authority
 evidence. Production readiness is proven only after `external-evidence-collect-batch`
 collects source snapshots from the fulfilled source map,
 `external-evidence-manifest-from-intakes` rebuilds the manifest from verified
 intake receipts, `external-evidence-readiness-verify --require-ready` passes
-against the rebuilt sources, and the resulting manifest/readiness evidence is
-committed to the evidence chain.
+against the rebuilt sources,
+`external-evidence-production-replacement-closure-verify --require-closed`
+passes against the rebuilt readiness proof, and the resulting
+manifest/readiness/closure evidence is committed to the evidence chain.
 
 ## Roadmap Evidence Report
 
