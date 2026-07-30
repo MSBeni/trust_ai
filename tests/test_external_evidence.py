@@ -28,6 +28,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA,
     EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA,
     EXTERNAL_EVIDENCE_READINESS_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
@@ -46,6 +47,7 @@ from trustai.external_evidence import (
     build_external_evidence_owner_fulfillment_review,
     build_external_evidence_owner_fulfillment_closure,
     build_external_evidence_readiness_report,
+    build_external_evidence_production_replacement_plan,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
     build_external_evidence_source_map_template,
@@ -65,6 +67,7 @@ from trustai.external_evidence import (
     load_external_evidence_owner_fulfillment_review,
     load_external_evidence_owner_fulfillment_closure,
     load_external_evidence_readiness_report,
+    load_external_evidence_production_replacement_plan,
     load_external_evidence_intake,
     load_external_evidence_intakes,
     load_external_evidence_source_snapshot,
@@ -81,6 +84,7 @@ from trustai.external_evidence import (
     render_external_evidence_owner_fulfillment_review_markdown,
     render_external_evidence_owner_fulfillment_closure_markdown,
     render_external_evidence_readiness_markdown,
+    render_external_evidence_production_replacement_plan_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
     verify_external_evidence_manifest,
@@ -92,6 +96,7 @@ from trustai.external_evidence import (
     verify_external_evidence_owner_fulfillment_review,
     verify_external_evidence_owner_fulfillment_closure,
     verify_external_evidence_readiness_report,
+    verify_external_evidence_production_replacement_plan,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1423,6 +1428,118 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
 
 
 
+    def test_external_evidence_production_replacement_plan_exports_non_production_tasks(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[{
+                "requirement_id": "oss-verifier-and-public-spec",
+                "authority_kind": "ci-run",
+                "path": FIXTURE,
+                "description": "Recorded verifier workflow run export.",
+                "issuer": "GitHub Actions",
+                "subject": "trustai go verifier release workflow",
+                "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+                "issued_at": "2026-07-08T00:00:00Z",
+                "expires_at": "2026-12-31T00:00:00Z",
+            }],
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        plan = build_external_evidence_collection_plan(manifest, audit, root=ROOT, status_filter="missing", generated_at="2026-07-09T00:00:00Z")
+        source_map = build_external_evidence_source_map_template(plan, status_filter="missing", limit=1, generated_at="2026-07-09T00:01:00Z")
+        gap_report = build_external_evidence_gap_report(manifest, plan, source_map, audit, root=ROOT, generated_at="2026-07-09T00:02:00Z")
+        work_package = build_external_evidence_work_package(gap_report, manifest, plan, source_map, audit, root=ROOT, generated_at="2026-07-09T00:03:00Z")
+        readiness = build_external_evidence_readiness_report(
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            audit,
+            root=ROOT,
+            work_package=work_package,
+            generated_at="2026-07-09T00:04:00Z",
+        )
+        replacement_plan = build_external_evidence_production_replacement_plan(
+            readiness,
+            manifest,
+            audit,
+            root=ROOT,
+            generated_at="2026-07-09T00:05:00Z",
+        )
+        result = verify_external_evidence_production_replacement_plan(replacement_plan, readiness, manifest, audit, root=ROOT)
+        markdown = render_external_evidence_production_replacement_plan_markdown(replacement_plan)
+
+        self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA, replacement_plan["schema"])
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual("open", replacement_plan["summary"]["replacement_status"])
+        self.assertEqual(1, replacement_plan["summary"]["task_count"])
+        self.assertEqual(1, replacement_plan["summary"]["non_production_covered_authority_kind_count"])
+        task = replacement_plan["tasks"][0]
+        self.assertEqual("oss-verifier-and-public-spec:ci-run", task["unit_ref"])
+        self.assertEqual("non-production-covered", task["coverage_status"])
+        self.assertEqual("external-evidence:oss-verifier-and-public-spec:ci-run", task["collection_task_ref"])
+        self.assertIn(FIXTURE, task["replaces_artifacts"])
+        self.assertTrue(task["non_production_reasons"])
+        self.assertIn("External Evidence Production Replacement Plan", markdown)
+        self.assertIn("Open replacement tasks: 1", markdown)
+
+        tampered = copy.deepcopy(replacement_plan)
+        tampered["summary"]["task_count"] = 0
+        tampered["replacement_plan_id"] = content_hash(without_keys(tampered, "replacement_plan_id"))
+        tampered_result = verify_external_evidence_production_replacement_plan(tampered, readiness, manifest, audit, root=ROOT)
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("production replacement plan body" in error for error in tampered_result.errors), tampered_result.errors)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            audit_path = tmp_path / "roadmap-audit.json"
+            manifest_path = tmp_path / "manifest.json"
+            readiness_path = tmp_path / "readiness.json"
+            out_path = tmp_path / "replacement-plan.json"
+            markdown_path = tmp_path / "replacement-plan.md"
+            write_roadmap_audit(audit_path, audit)
+            write_external_evidence_manifest(manifest_path, manifest)
+            readiness_path.write_text(json.dumps(readiness, indent=2, sort_keys=True), encoding="utf-8")
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-plan",
+                    str(readiness_path),
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--generated-at",
+                    "2026-07-09T00:05:00Z",
+                    "--out",
+                    str(out_path),
+                    "--markdown",
+                    str(markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_plan = load_external_evidence_production_replacement_plan(out_path)
+            self.assertEqual(replacement_plan, cli_plan)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-plan-verify",
+                    str(out_path),
+                    str(readiness_path),
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
     def test_external_evidence_intake_binds_artifact_to_collection_task(self):
         audit = build_roadmap_audit(ROOT)
         manifest = build_external_evidence_manifest(
@@ -1885,6 +2002,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             ),
             readiness["non_production_covered_authority_units"][:3],
         )
+        audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))
+        manifest = load_external_evidence_manifest(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-manifest.json")
+        replacement_plan = load_external_evidence_production_replacement_plan(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-plan.json")
+        replacement_result = verify_external_evidence_production_replacement_plan(replacement_plan, readiness, manifest, audit, root=ROOT)
+        self.assertTrue(replacement_result.ok, replacement_result.errors)
+        self.assertEqual("open", replacement_plan["summary"]["replacement_status"])
+        self.assertEqual(72, replacement_plan["summary"]["task_count"])
+        self.assertEqual(72, replacement_plan["summary"]["non_production_covered_authority_kind_count"])
 
     def test_retained_external_evidence_examples_verify(self):
         audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))

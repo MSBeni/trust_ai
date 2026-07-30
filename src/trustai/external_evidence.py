@@ -32,6 +32,7 @@ EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA = "trustai.external-evidence
 EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA = "trustai.external-evidence-owner-fulfillment-review/0.1"
 EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA = "trustai.external-evidence-owner-fulfillment-closure/0.1"
 EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA = "trustai.external-evidence-production-replacement-plan/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
@@ -258,6 +259,13 @@ class ExternalEvidenceOwnerFulfillmentClosureVerification:
 
 @dataclass
 class ExternalEvidenceReadinessVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementPlanVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -3196,6 +3204,241 @@ def verify_external_evidence_readiness_report(
     return ExternalEvidenceReadinessVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+def _production_replacement_plan_task(
+    readiness_unit: dict[str, Any],
+    manifest_unit: dict[str, Any],
+    evidence_by_id: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    unit_ref = str(readiness_unit.get("unit_ref") or manifest_unit.get("unit_ref") or "")
+    if ":" in unit_ref:
+        fallback_requirement_id, fallback_authority_kind = unit_ref.split(":", 1)
+    else:
+        fallback_requirement_id, fallback_authority_kind = "", "other"
+    requirement_id = str(manifest_unit.get("requirement_id") or fallback_requirement_id)
+    authority_kind = str(manifest_unit.get("authority_kind") or fallback_authority_kind)
+    unit_id = str(manifest_unit.get("unit_id") or _authority_unit_id(requirement_id, authority_kind))
+    base_task = _authority_collection_task(
+        {
+            "unit_id": unit_id,
+            "unit_ref": unit_ref,
+            "requirement_id": requirement_id,
+            "phase": manifest_unit.get("phase"),
+            "priority": manifest_unit.get("priority"),
+            "title": manifest_unit.get("title"),
+            "authority_kind": authority_kind,
+            "coverage_status": "covered",
+            "external_authority_required": manifest_unit.get("external_authority_required", []),
+        }
+    )
+    items = readiness_unit.get("items", [])
+    if not isinstance(items, list):
+        items = []
+    evidence_ids = sorted({str(item.get("evidence_id") or "") for item in items if isinstance(item, dict) and item.get("evidence_id")})
+    retained_paths = sorted({str(item.get("path") or "") for item in items if isinstance(item, dict) and item.get("path")})
+    reasons = sorted(
+        {
+            str(reason)
+            for item in items
+            if isinstance(item, dict)
+            for reason in item.get("reasons", [])
+            if str(reason)
+        }
+    )
+    retained_source_uris = sorted(
+        {
+            str(evidence_by_id[evidence_id].get("source_uri") or "")
+            for evidence_id in evidence_ids
+            if evidence_id in evidence_by_id and evidence_by_id[evidence_id].get("source_uri")
+        }
+    )
+    suggested_artifact_path = f"external-evidence/production/{requirement_id}/{authority_kind}.json"
+    description = f"production {authority_kind} evidence for {requirement_id}"
+    return {
+        "task_id": content_hash({"task_kind": "external-authority-production-replacement", "unit_id": unit_id, "unit_ref": unit_ref}),
+        "task_ref": f"external-evidence-production-replacement:{unit_ref}",
+        "collection_task_ref": base_task.get("task_ref"),
+        "unit_id": unit_id,
+        "unit_ref": unit_ref,
+        "requirement_id": requirement_id,
+        "phase": manifest_unit.get("phase"),
+        "priority": manifest_unit.get("priority"),
+        "title": manifest_unit.get("title"),
+        "authority_kind": authority_kind,
+        "coverage_status": "non-production-covered",
+        "replacement_status": "requires-production-authority",
+        "owner_hint": base_task.get("owner_hint"),
+        "suggested_artifact_path": suggested_artifact_path,
+        "evidence_argument_template": (
+            f"{requirement_id},{authority_kind},{suggested_artifact_path},{description}"
+            ";issuer=<live-authority-issuer>;subject=<named-production-subject>;source_uri=<authority-owned-source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>"
+        ),
+        "suggested_evidence_sources": base_task.get("suggested_evidence_sources", []),
+        "external_authority_required": manifest_unit.get("external_authority_required", []),
+        "replaces_evidence_ids": evidence_ids,
+        "replaces_artifacts": retained_paths,
+        "retained_source_uris": retained_source_uris,
+        "non_production_reasons": reasons,
+        "acceptance_criteria": [
+            "Replacement artifact must come from a live authority-owned source, not a retained fixture, checked-in example, or reference export.",
+            f"Evidence item authority_kind must be {authority_kind} and accepted for {requirement_id}.",
+            "Source snapshot and intake receipt must verify with freshness and source-snapshot artifact checks enabled.",
+            "Rebuild the external evidence manifest and rerun external-evidence-readiness with --require-ready before claiming production authority coverage.",
+        ],
+        "next_actions": [
+            "Collect a fresh source snapshot from the named external authority for this unit.",
+            "Create and verify an intake receipt that maps the snapshot to the matching collection task.",
+            "Replace the retained/reference evidence item in the manifest with the production authority artifact.",
+            "Regenerate retained readiness and this replacement plan; this task closes only when it disappears from the plan.",
+        ],
+    }
+
+
+def build_external_evidence_production_replacement_plan(
+    readiness: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    group_by: str = "owner_hint",
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if group_by not in EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY:
+        raise ValueError(f"unsupported external evidence production replacement group_by: {group_by}")
+    if readiness.get("schema") != EXTERNAL_EVIDENCE_READINESS_SCHEMA:
+        raise ValueError(f"unsupported external evidence readiness schema: {readiness.get('schema')}")
+    if readiness.get("readiness_id") != content_hash(without_keys(readiness, "readiness_id")):
+        raise ValueError("readiness_id does not match canonical readiness body")
+    manifest_result = verify_external_evidence_manifest(manifest, roadmap_audit, root=root)
+    if not manifest_result.ok:
+        raise ValueError("invalid source external evidence manifest: " + "; ".join(manifest_result.errors))
+
+    units = manifest.get("required_authority_evidence_units", [])
+    if not isinstance(units, list):
+        raise ValueError("required_authority_evidence_units must be a list")
+    unit_by_ref = {
+        str(unit.get("unit_ref") or ""): unit
+        for unit in units
+        if isinstance(unit, dict) and unit.get("unit_ref")
+    }
+    evidence_by_id = {
+        str(item.get("evidence_id") or ""): item
+        for item in manifest.get("evidence", [])
+        if isinstance(item, dict) and item.get("evidence_id")
+    }
+    readiness_units = readiness.get("non_production_covered_authority_units", [])
+    if not isinstance(readiness_units, list):
+        raise ValueError("readiness non_production_covered_authority_units must be a list")
+
+    tasks: list[dict[str, Any]] = []
+    for index, readiness_unit in enumerate(readiness_units):
+        if not isinstance(readiness_unit, dict):
+            raise ValueError(f"readiness non-production unit {index} must be an object")
+        unit_ref = str(readiness_unit.get("unit_ref") or "")
+        manifest_unit = unit_by_ref.get(unit_ref)
+        if manifest_unit is None:
+            raise ValueError(f"readiness non-production unit is not present in manifest authority units: {unit_ref}")
+        tasks.append(_production_replacement_plan_task(readiness_unit, manifest_unit, evidence_by_id))
+    tasks.sort(key=_external_evidence_work_package_task_sort_key)
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for task in tasks:
+        group_key = str(task.get(group_by) or "unknown")
+        grouped.setdefault(group_key, []).append(task)
+
+    packages = []
+    for group_key in sorted(grouped):
+        package_tasks = grouped[group_key]
+        package_body = {
+            "package_ref": f"{group_by}:{_source_map_path_segment(group_key)}",
+            "group_by": group_by,
+            "group_key": group_key,
+            group_by: group_key,
+            "task_count": len(package_tasks),
+            "authority_kinds": _external_evidence_work_package_values(package_tasks, "authority_kind"),
+            "requirement_ids": _external_evidence_work_package_values(package_tasks, "requirement_id"),
+            "phases": _external_evidence_work_package_values(package_tasks, "phase"),
+            "priorities": _external_evidence_work_package_values(package_tasks, "priority"),
+            "tasks": package_tasks,
+        }
+        packages.append({**package_body, "package_id": content_hash(package_body)})
+
+    readiness_summary = readiness.get("summary", {}) if isinstance(readiness.get("summary"), dict) else {}
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "group_by": group_by,
+        "sources": {
+            "readiness": _gap_report_source_record(readiness, "readiness_id", "readiness_hash"),
+            "manifest": _gap_report_source_record(manifest, "manifest_id", "manifest_hash"),
+            "roadmap_audit": _gap_report_source_record(roadmap_audit, "audit_id", "audit_hash"),
+        },
+        "summary": {
+            "readiness_status": readiness_summary.get("readiness_status"),
+            "required_authority_kind_count": readiness_summary.get("required_authority_kind_count", 0),
+            "covered_authority_kind_count": readiness_summary.get("covered_authority_kind_count", 0),
+            "production_usable_covered_authority_kind_count": readiness_summary.get("production_usable_covered_authority_kind_count", 0),
+            "non_production_covered_authority_kind_count": readiness_summary.get("non_production_covered_authority_kind_count", 0),
+            "replacement_status": "open" if tasks else "not-needed",
+            "package_count": len(packages),
+            "task_count": len(tasks),
+            "replaced_artifact_count": len({path for task in tasks for path in task.get("replaces_artifacts", [])}),
+            "task_count_by_owner_hint": _gap_report_group_counts(tasks, "owner_hint"),
+            "task_count_by_authority_kind": _gap_report_group_counts(tasks, "authority_kind"),
+            "task_count_by_phase": _gap_report_group_counts(tasks, "phase"),
+            "task_count_by_priority": _gap_report_group_counts(tasks, "priority"),
+            "task_count_by_requirement": _gap_report_group_counts(tasks, "requirement_id"),
+            "task_count_by_package": {package["package_ref"]: package["task_count"] for package in packages},
+        },
+        "packages": packages,
+        "tasks": tasks,
+        "limitations": [
+            "This plan identifies retained/reference authority evidence that must be replaced; it does not collect live authority evidence by itself.",
+            "A replacement task closes only when the retained evidence item is replaced by a live authority source snapshot, intake receipt, rebuilt manifest entry, and ready readiness report.",
+            "Keep retained examples for demo verification, but do not treat them as production authority evidence.",
+        ],
+    }
+    return {**body, "replacement_plan_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_plan(
+    plan: dict[str, Any],
+    readiness: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+) -> ExternalEvidenceProductionReplacementPlanVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if plan.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement plan schema: {plan.get('schema')}")
+    if plan.get("replacement_plan_id") != content_hash(without_keys(plan, "replacement_plan_id")):
+        errors.append("replacement_plan_id does not match canonical production replacement plan body")
+    group_by = str(plan.get("group_by") or "")
+    if group_by not in EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY:
+        errors.append(f"unsupported external evidence production replacement plan group_by: {group_by}")
+    try:
+        expected = build_external_evidence_production_replacement_plan(
+            readiness,
+            manifest,
+            roadmap_audit,
+            root=root,
+            group_by=group_by if group_by in EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY else "owner_hint",
+            generated_at=str(plan.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(plan, "replacement_plan_id") != without_keys(expected, "replacement_plan_id"):
+            errors.append("production replacement plan body does not match supplied readiness, manifest, and roadmap audit")
+    summary = plan.get("summary", {}) if isinstance(plan.get("summary"), dict) else {}
+    non_production_count = summary.get("non_production_covered_authority_kind_count")
+    task_count = summary.get("task_count")
+    if isinstance(non_production_count, int) and isinstance(task_count, int) and non_production_count != task_count:
+        errors.append("production replacement plan task count must match non-production covered authority unit count")
+    if summary.get("replacement_status") == "open":
+        warnings.append(f"production replacement plan has {summary.get('task_count', 0)} open authority-evidence replacement tasks")
+    return ExternalEvidenceProductionReplacementPlanVerification(ok=not errors, errors=errors, warnings=warnings)
 def build_external_evidence_source_snapshot(
     *,
     source_uri: str,
@@ -4558,6 +4801,20 @@ def write_external_evidence_readiness_markdown(path: str | Path, report: dict[st
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_readiness_markdown(report), encoding="utf-8")
 
+def write_external_evidence_production_replacement_plan(path: str | Path, plan: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(plan, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_plan(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_plan_markdown(path: str | Path, plan: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_plan_markdown(plan), encoding="utf-8")
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -5105,6 +5362,49 @@ def render_external_evidence_readiness_markdown(report: dict[str, Any]) -> str:
         lines.append("- None")
     return "\n".join(lines).rstrip() + "\n"
 
+def render_external_evidence_production_replacement_plan_markdown(plan: dict[str, Any]) -> str:
+    summary = plan.get("summary", {}) if isinstance(plan.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Plan",
+        "",
+        f"- Replacement plan ID: `{plan.get('replacement_plan_id')}`",
+        f"- Generated at: `{plan.get('generated_at')}`",
+        f"- Status: `{summary.get('replacement_status')}`",
+        f"- Open replacement tasks: {summary.get('task_count', 0)}",
+        f"- Non-production covered authority units: {summary.get('non_production_covered_authority_kind_count', 0)}",
+        f"- Production-usable covered authority units: {summary.get('production_usable_covered_authority_kind_count', 0)}",
+        f"- Packages: {summary.get('package_count', 0)}",
+        "",
+        "## Packages",
+        "",
+        "| Package | Tasks | Authority Kinds | Requirements |",
+        "|---|---:|---|---|",
+    ]
+    packages = plan.get("packages", [])
+    if isinstance(packages, list):
+        for package in packages:
+            if isinstance(package, dict):
+                lines.append(
+                    f"| `{_markdown_cell(package.get('package_ref'))}` | {package.get('task_count', 0)} | "
+                    f"{_markdown_code_list(package.get('authority_kinds'))} | {_markdown_code_list(package.get('requirement_ids'))} |"
+                )
+    tasks = plan.get("tasks", [])
+    lines.extend(["", "## Replacement Tasks", "", "| Unit | Owner | Authority | Replaces | Reasons |", "|---|---|---|---|---|"])
+    if isinstance(tasks, list):
+        for task in tasks:
+            if isinstance(task, dict):
+                lines.append(
+                    f"| `{_markdown_cell(task.get('unit_ref'))}` | {_markdown_cell(task.get('owner_hint'))} | "
+                    f"`{_markdown_cell(task.get('authority_kind'))}` | {_markdown_code_list(task.get('replaces_artifacts'))} | "
+                    f"{_markdown_text_list(task.get('non_production_reasons'))} |"
+                )
+    limitations = plan.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
 def render_external_evidence_gap_report_markdown(report: dict[str, Any]) -> str:
     summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}
     lines = [

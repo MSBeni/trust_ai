@@ -1195,6 +1195,7 @@ from .external_evidence import (
     build_external_evidence_owner_fulfillment_review,
     build_external_evidence_owner_fulfillment_closure,
     build_external_evidence_readiness_report,
+    build_external_evidence_production_replacement_plan,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
     build_external_evidence_collection_plan,
@@ -1202,6 +1203,7 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
+    EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY,
     build_external_evidence_source_snapshot,
     build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
@@ -1215,6 +1217,7 @@ from .external_evidence import (
     load_external_evidence_owner_fulfillment_review,
     load_external_evidence_owner_fulfillment_closure,
     load_external_evidence_readiness_report,
+    load_external_evidence_production_replacement_plan,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_collection_run,
@@ -1236,6 +1239,7 @@ from .external_evidence import (
     verify_external_evidence_owner_fulfillment_review,
     verify_external_evidence_owner_fulfillment_closure,
     verify_external_evidence_readiness_report,
+    verify_external_evidence_production_replacement_plan,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1261,6 +1265,8 @@ from .external_evidence import (
     write_external_evidence_owner_fulfillment_closure_markdown,
     write_external_evidence_readiness_report,
     write_external_evidence_readiness_markdown,
+    write_external_evidence_production_replacement_plan,
+    write_external_evidence_production_replacement_plan_markdown,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
@@ -16841,6 +16847,78 @@ def cmd_external_evidence_readiness_verify(args: argparse.Namespace) -> int:
         print(f"- {error}", file=sys.stderr)
     return 1
 
+def cmd_external_evidence_production_replacement_plan(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        readiness = load_external_evidence_readiness_report(args.readiness)
+        plan = build_external_evidence_production_replacement_plan(
+            readiness,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            group_by=args.group_by,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_plan(
+            plan,
+            readiness,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement plan failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement plan verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_plan(args.out, plan)
+    if args.markdown:
+        write_external_evidence_production_replacement_plan_markdown(args.markdown, plan)
+        print(f"external evidence production replacement plan markdown: {args.markdown}")
+    summary = plan["summary"]
+    print(f"external evidence production replacement plan: {args.out}")
+    print(f"replacement plan id: {plan['replacement_plan_id']}")
+    print(f"status: {summary['replacement_status']}")
+    print(f"replacement tasks: {summary['task_count']}")
+    print(f"packages: {summary['package_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_plan_verify(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        readiness = load_external_evidence_readiness_report(args.readiness)
+        plan = load_external_evidence_production_replacement_plan(args.plan)
+        result = verify_external_evidence_production_replacement_plan(
+            plan,
+            readiness,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement plan verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = plan.get("summary", {})
+        print(f"verified external evidence production replacement plan: {args.plan}")
+        print(f"replacement plan id: {plan.get('replacement_plan_id')}")
+        print(f"status: {summary.get('replacement_status')}")
+        print(f"replacement tasks: {summary.get('task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement plan verification failed: {args.plan}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
 def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -28287,6 +28365,24 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_readiness_verify.add_argument("--root", default=".")
     external_evidence_readiness_verify.add_argument("--require-ready", action="store_true", help="exit non-zero unless the readiness report is production-ready")
     external_evidence_readiness_verify.set_defaults(func=cmd_external_evidence_readiness_verify)
+    external_evidence_production_replacement_plan = subparsers.add_parser("external-evidence-production-replacement-plan", help="write tasks for replacing retained/reference authority evidence with production evidence")
+    external_evidence_production_replacement_plan.add_argument("readiness")
+    external_evidence_production_replacement_plan.add_argument("manifest")
+    external_evidence_production_replacement_plan.add_argument("roadmap_audit")
+    external_evidence_production_replacement_plan.add_argument("--root", default=".")
+    external_evidence_production_replacement_plan.add_argument("--group-by", default="owner_hint", choices=sorted(EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY))
+    external_evidence_production_replacement_plan.add_argument("--generated-at")
+    external_evidence_production_replacement_plan.add_argument("--out", default="artifacts/external-evidence-production-replacement-plan.json")
+    external_evidence_production_replacement_plan.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-plan.md")
+    external_evidence_production_replacement_plan.set_defaults(func=cmd_external_evidence_production_replacement_plan)
+
+    external_evidence_production_replacement_plan_verify = subparsers.add_parser("external-evidence-production-replacement-plan-verify", help="verify an external-evidence production replacement plan")
+    external_evidence_production_replacement_plan_verify.add_argument("plan")
+    external_evidence_production_replacement_plan_verify.add_argument("readiness")
+    external_evidence_production_replacement_plan_verify.add_argument("manifest")
+    external_evidence_production_replacement_plan_verify.add_argument("roadmap_audit")
+    external_evidence_production_replacement_plan_verify.add_argument("--root", default=".")
+    external_evidence_production_replacement_plan_verify.set_defaults(func=cmd_external_evidence_production_replacement_plan_verify)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")

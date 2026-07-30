@@ -1267,6 +1267,20 @@ def refresh_retained_artifacts() -> None:
         "--markdown",
         path("retained-external-evidence-readiness.md"),
     )
+    run(
+        "external-evidence-production-replacement-plan",
+        path("retained-external-evidence-readiness.json"),
+        path("retained-external-evidence-manifest.json"),
+        path("source-roadmap-audit.json"),
+        "--root",
+        ".",
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-plan.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-plan.md"),
+    )
 
 
 def write_deterministic_source_roadmap_audit() -> None:
@@ -1578,6 +1592,15 @@ def verify_retained_artifacts() -> None:
         "--root",
         ".",
     )
+    run(
+        "external-evidence-production-replacement-plan-verify",
+        path("retained-external-evidence-production-replacement-plan.json"),
+        path("retained-external-evidence-readiness.json"),
+        path("retained-external-evidence-manifest.json"),
+        path("source-roadmap-audit.json"),
+        "--root",
+        ".",
+    )
     assert_retained_counts()
     verify_retained_collection_chain()
 
@@ -1601,6 +1624,7 @@ def assert_retained_counts() -> None:
     owner_fulfillment_closure = json_load(DIR / "remaining-external-evidence-owner-fulfillment-closure.json")
     owner_fulfilled_source_map = json_load(DIR / "remaining-external-evidence-owner-fulfilled-source-map.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
+    production_replacement_plan = json_load(DIR / "retained-external-evidence-production-replacement-plan.json")
     remaining_package_count = len(work_package.get("packages", []))
     expected_review_status = "ready-to-collect" if remaining_count == 0 else "blocked"
     expected_review_source_map_ok = remaining_count == 0
@@ -1637,6 +1661,9 @@ def assert_retained_counts() -> None:
         (owner_fulfillment_closure["summary"]["placeholder_source_uri_count"], remaining_count, "owner fulfillment closure placeholder URI count"),
         (readiness["summary"]["readiness_status"], expected_readiness_status, "readiness status"),
         (readiness["summary"]["non_production_covered_authority_kind_count"], expected_non_production_count, "readiness non-production coverage count"),
+        (production_replacement_plan["summary"]["replacement_status"], "open", "production replacement plan status"),
+        (production_replacement_plan["summary"]["task_count"], expected_non_production_count, "production replacement plan task count"),
+        (production_replacement_plan["summary"]["non_production_covered_authority_kind_count"], expected_non_production_count, "production replacement plan non-production coverage count"),
     ]
     for actual, expected, label in checks:
         if actual != expected:
