@@ -77,7 +77,10 @@ the source trace hash, event sequence, total event count, span ID, event name,
 and source payload hash. The final event node is copied to
 `trustai.adapter.trace_root`, so verifier and matrix checks can detect omitted,
 reordered, or edited normalized adapter events without storing raw framework
-payloads in the matrix row.
+payloads in the matrix row. When a framework-native parent span is supplied,
+verification also checks that the normalized `parent_span_id` matches the
+framework-native parent reference and that the referenced parent span appears
+earlier in the same adapter trace.
 
 ## CLI
 

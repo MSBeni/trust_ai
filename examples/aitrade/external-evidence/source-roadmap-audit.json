@@ -1,5 +1,5 @@
 {
-  "audit_id": "183a36a2443b1b40a611964f2f4deca63a3fb2d7d999556652b1ff936648aa7b",
+  "audit_id": "c6752659110ddbd6bba928a98763cd5e0e53f022ccaefd19f59aadce12fb0b57",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -999,7 +999,7 @@
         {
           "path": "docs/specs/framework-adapters-v0.1.md",
           "present": true,
-          "sha256": "sha256:9fdd59e9c9d2a4056f527bc753fb8b6bb09518c7151350466a5632e18cdb299a"
+          "sha256": "sha256:b8e29ed7247e9a9e123e536b5eb3fe79ceacb722e6808530e067545d28e533b8"
         },
         {
           "path": "docs/specs/framework-adapter-matrix-v0.1.md",
@@ -1014,7 +1014,7 @@
         {
           "path": "src/trustai/adapters.py",
           "present": true,
-          "sha256": "sha256:dabe29dda25385d72a0b2417eb4369c4ac423eea18da1d2a1e99a4ef1d66e072"
+          "sha256": "sha256:ae758da75c7d5925154a0b82fddbce7b9ca0f5062cb2376a317783c45e367496"
         },
         {
           "path": "src/trustai/framework_adapter_matrix.py",
@@ -1039,7 +1039,7 @@
         {
           "path": "tests/test_framework_adapters.py",
           "present": true,
-          "sha256": "sha256:64be8cf0d74b468757ec966d1943c162e4890e520973647b1a0aa16361510e69"
+          "sha256": "sha256:c4c0c42414f6ceb3e7d263439675d8064216f6b7f78a599b6c228e95a2acb8c8"
         },
         {
           "path": "tests/test_framework_adapter_matrix.py",

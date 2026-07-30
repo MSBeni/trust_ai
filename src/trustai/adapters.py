@@ -122,6 +122,7 @@ def verify_framework_event_chains(events: list[dict[str, Any]]) -> list[str]:
         ordered = sorted(group, key=lambda item: item.get("attributes", {}).get("trustai.adapter.event_sequence", -1))
         expected_count = len(ordered)
         previous_node_hash: str | None = None
+        seen_span_ids: set[str] = set()
         for index, event in enumerate(ordered):
             attrs = event.get("attributes", {}) if isinstance(event.get("attributes"), dict) else {}
             prefix = f"framework adapter trace {trace_id} event {index}"
@@ -133,6 +134,19 @@ def verify_framework_event_chains(events: list[dict[str, Any]]) -> list[str]:
                 errors.append(f"{prefix} event_count mismatch")
             if attrs.get("trustai.adapter.previous_event_node_hash") != previous_node_hash:
                 errors.append(f"{prefix} previous_event_node_hash mismatch")
+
+            framework = str(attrs.get("trustai.adapter.framework") or "")
+            source_parent_span_id = attrs.get("trustai.adapter.source_parent_span_id")
+            parent_span_id = event.get("parent_span_id")
+            if source_parent_span_id:
+                expected_parent_span_id = _otel_span_id(framework, source_parent_span_id)
+                if parent_span_id != expected_parent_span_id:
+                    errors.append(f"{prefix} parent_span_id mismatch")
+                if expected_parent_span_id not in seen_span_ids:
+                    errors.append(f"{prefix} parent_span_id references missing or later parent")
+            elif parent_span_id:
+                errors.append(f"{prefix} parent_span_id present without source_parent_span_id")
+
             node_body = {
                 "schema": ADAPTER_EVENT_CHAIN_SCHEMA,
                 "trace_hash": attrs.get("trustai.adapter.trace_hash"),
@@ -147,6 +161,9 @@ def verify_framework_event_chains(events: list[dict[str, Any]]) -> list[str]:
             if attrs.get("trustai.adapter.event_node_hash") != expected_node_hash:
                 errors.append(f"{prefix} event_node_hash mismatch")
             previous_node_hash = expected_node_hash
+            span_id = event.get("span_id")
+            if isinstance(span_id, str) and span_id:
+                seen_span_ids.add(span_id)
         if ordered:
             final_root = ordered[-1].get("attributes", {}).get("trustai.adapter.event_node_hash")
             if trace_root != final_root:

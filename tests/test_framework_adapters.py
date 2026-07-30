@@ -63,6 +63,51 @@ class FrameworkAdapterTests(unittest.TestCase):
                 framework_events[-1]["attributes"]["trustai.adapter.trace_root"],
             )
 
+    def test_framework_event_chain_verifies_parent_span_integrity(self):
+        payload = {
+            "framework": "openai_agents",
+            "trace_id": "parent-trace-001",
+            "contract_hash": "a" * 64,
+            "agent": {
+                "name": "aitrade-risk-agent",
+                "version": "sha256:" + "b" * 64,
+                "risk_class": "trading-prod-write",
+            },
+            "items": [
+                {
+                    "type": "message",
+                    "id": "msg-parent-001",
+                    "timestamp": "2026-07-03T12:00:12Z",
+                    "role": "assistant",
+                    "content": "I will check policy before the tool call.",
+                },
+                {
+                    "type": "function_call",
+                    "id": "call-child-001",
+                    "parent_id": "msg-parent-001",
+                    "timestamp": "2026-07-03T12:00:13Z",
+                    "name": "place_shadow_order",
+                    "arguments": {"symbol": "BTCUSDT"},
+                },
+            ],
+        }
+
+        events = framework_payload_to_events(payload)
+
+        self.assertEqual([], verify_framework_event_chains(events))
+        self.assertEqual(events[0]["span_id"], events[1]["parent_span_id"])
+        self.assertEqual("msg-parent-001", events[1]["attributes"]["trustai.adapter.source_parent_span_id"])
+
+        tampered_parent = copy.deepcopy(events)
+        tampered_parent[1]["parent_span_id"] = "f" * 16
+        errors = verify_framework_event_chains(tampered_parent)
+        self.assertTrue(any("parent_span_id mismatch" in error for error in errors), errors)
+
+        orphaned_parent = copy.deepcopy(events)
+        orphaned_parent[1]["attributes"]["trustai.adapter.source_parent_span_id"] = "missing-parent"
+        errors = verify_framework_event_chains(orphaned_parent)
+        self.assertTrue(any("missing or later parent" in error for error in errors), errors)
+
     def test_framework_event_chain_tamper_is_rejected(self):
         events = load_framework_events(FRAMEWORK_TRACES)
         tampered = json.loads(json.dumps(events))
