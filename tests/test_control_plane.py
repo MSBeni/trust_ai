@@ -196,7 +196,15 @@ def _complete_shadow_authority_evidence() -> list[dict]:
     return rows
 
 ROOT = Path(__file__).resolve().parents[1]
-RETAINED_PRODUCTION_REPLACEMENT_CLOSURE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-closure.json"
+RETAINED_PRODUCTION_REPLACEMENT_DIR = ROOT / "examples" / "aitrade" / "external-evidence"
+RETAINED_PRODUCTION_REPLACEMENT_ARTIFACTS = (
+    RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-plan.json",
+    RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-owner-packets.json",
+    RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-owner-packet-status.json",
+    RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-intake-template.json",
+    RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-submission-review.json",
+)
+RETAINED_PRODUCTION_REPLACEMENT_CLOSURE = RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-closure.json"
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
@@ -915,6 +923,10 @@ class ControlPlaneTests(unittest.TestCase):
             try:
                 counts = control.index_chain(chain)
                 control.index_proof_pack(pack, tmp / "pack.json")
+                for artifact_path in RETAINED_PRODUCTION_REPLACEMENT_ARTIFACTS:
+                    control.index_external_evidence_production_replacement_artifact(
+                        json.loads(artifact_path.read_text(encoding="utf-8"))
+                    )
                 production_replacement_closure = load_external_evidence_production_replacement_closure(
                     RETAINED_PRODUCTION_REPLACEMENT_CLOSURE
                 )
@@ -948,6 +960,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["roadmap_audits"])
                 self.assertEqual(1, summary["counts"]["external_evidence_collection_runs"])
                 self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
+                self.assertEqual(6, summary["counts"]["external_evidence_production_replacement_lifecycle"])
                 self.assertEqual(1, summary["counts"]["external_evidence_production_replacement_closures"])
                 self.assertEqual(2, summary["counts"]["authority_dossiers"])
                 self.assertEqual(1, summary["counts"]["phase_scoreboards"])
@@ -988,6 +1001,18 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, summary["latest_external_evidence_collection_run"]["collected_count"])
                 self.assertEqual("partial", summary["latest_external_evidence_manifest"]["status"])
                 self.assertGreater(summary["latest_external_evidence_manifest"]["missing_authority_kind_count"], 0)
+                latest_production_replacement_lifecycle = summary["latest_external_evidence_production_replacement_lifecycle"]
+                self.assertIn(
+                    latest_production_replacement_lifecycle["artifact_kind"],
+                    {
+                        "replacement-plan",
+                        "owner-packet-bundle",
+                        "owner-packet-status",
+                        "intake-template",
+                        "submission-review",
+                        "closure",
+                    },
+                )
                 latest_production_replacement_closure = summary["latest_external_evidence_production_replacement_closure"]
                 self.assertEqual(
                     production_replacement_closure["production_replacement_closure_id"],
@@ -1195,6 +1220,19 @@ class ControlPlaneTests(unittest.TestCase):
                     roadmap_evidence["external_evidence_collection_runs"][0]["intake_ids"],
                 )
                 self.assertEqual(1, len(roadmap_evidence["external_evidence_manifests"]))
+                self.assertEqual(6, len(roadmap_evidence["external_evidence_production_replacement_lifecycle"]))
+                lifecycle_kinds = {item["artifact_kind"] for item in roadmap_evidence["external_evidence_production_replacement_lifecycle"]}
+                self.assertEqual(
+                    {
+                        "replacement-plan",
+                        "owner-packet-bundle",
+                        "owner-packet-status",
+                        "intake-template",
+                        "submission-review",
+                        "closure",
+                    },
+                    lifecycle_kinds,
+                )
                 self.assertEqual(1, len(roadmap_evidence["external_evidence_production_replacement_closures"]))
                 production_replacement_closure_row = roadmap_evidence["external_evidence_production_replacement_closures"][0]
                 self.assertEqual("blocked", production_replacement_closure_row["closure_status"])
@@ -1304,6 +1342,15 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertTrue(
                     any("State of Agent Reliability publication incomplete" in blocker for blocker in readiness["blockers"])
                 )
+                production_replacement_lifecycle = control.recent_external_evidence_production_replacement_lifecycle()
+                self.assertEqual(6, len(production_replacement_lifecycle))
+                lifecycle_by_kind = {item["artifact_kind"]: item for item in production_replacement_lifecycle}
+                self.assertEqual("open", lifecycle_by_kind["replacement-plan"]["status"])
+                self.assertEqual(72, lifecycle_by_kind["replacement-plan"]["task_count"])
+                self.assertEqual(10, lifecycle_by_kind["owner-packet-bundle"]["packet_count"])
+                self.assertEqual(72, lifecycle_by_kind["intake-template"]["request_count"])
+                self.assertEqual("blocked", lifecycle_by_kind["submission-review"]["review_status"])
+                self.assertEqual(72, len(lifecycle_by_kind["submission-review"]["tasks"]))
                 production_replacement_closures = control.recent_external_evidence_production_replacement_closures()
                 self.assertEqual(1, len(production_replacement_closures))
                 self.assertEqual("blocked", production_replacement_closures[0]["summary"]["closure_status"])

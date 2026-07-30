@@ -35,6 +35,11 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
 )
 from .framework_adapter_authority import FRAMEWORK_ADAPTER_AUTHORITY_ENTRY_TYPE
 from .framework_adapter_matrix import FRAMEWORK_ADAPTER_MATRIX_ENTRY_TYPE
@@ -184,6 +189,7 @@ INDEX_TABLES = (
     "roadmap_audits",
     "external_evidence_collection_runs",
     "external_evidence_manifests",
+    "external_evidence_production_replacement_lifecycle",
     "external_evidence_production_replacement_closures",
     "authority_dossiers",
     "phase_scoreboards",
@@ -247,6 +253,14 @@ EVIDENCE_CHAIN_TRUST_ENTRY_TYPES = {
     TRUST_AUTHORITY_KMS_ENFORCEMENT_ENTRY_TYPE,
 }
 
+PRODUCTION_REPLACEMENT_ARTIFACTS = {
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA: ("replacement-plan", "replacement_plan_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA: ("owner-packet-bundle", "owner_packet_bundle_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA: ("owner-packet-status", "owner_packet_status_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA: ("intake-template", "production_replacement_intake_template_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA: ("submission-review", "production_replacement_submission_review_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA: ("closure", "production_replacement_closure_id"),
+}
 EVIDENCE_CHAIN_TRUST_ARTIFACT_KINDS = {
     ANCHOR_PROVIDER_ENTRY_TYPE: "anchor-provider-receipt",
     TRUST_AUTHORITY_ENTRY_TYPE: "trust-authority-receipt",
@@ -1296,6 +1310,33 @@ def _bool_fields(item: dict[str, Any], *fields: str) -> dict[str, Any]:
             item[field] = bool(item[field])
     return item
 
+
+def _production_replacement_artifact_info(artifact: dict[str, Any]) -> tuple[str, str, str]:
+    schema = artifact.get("schema")
+    if schema not in PRODUCTION_REPLACEMENT_ARTIFACTS:
+        raise ValueError(f"unsupported production replacement artifact schema: {schema}")
+    artifact_kind, id_field = PRODUCTION_REPLACEMENT_ARTIFACTS[schema]
+    artifact_id = artifact.get(id_field)
+    expected_id = content_hash(without_keys(artifact, id_field))
+    if artifact_id != expected_id:
+        raise ValueError(f"{id_field} does not match canonical {artifact_kind} body")
+    return artifact_kind, id_field, artifact_id
+
+
+def _summary_int(summary: dict[str, Any], *fields: str) -> int:
+    for field in fields:
+        value = summary.get(field)
+        if value is not None:
+            return int(value or 0)
+    return 0
+
+
+def _production_replacement_status(summary: dict[str, Any]) -> str | None:
+    for field in ("closure_status", "review_status", "replacement_status", "readiness_status"):
+        value = summary.get(field)
+        if value:
+            return str(value)
+    return None
 
 def _decode_json_array(value: Any) -> list[Any]:
     if not value:
@@ -2563,6 +2604,36 @@ class ControlPlane:
                 freshness_checked_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS external_evidence_production_replacement_lifecycle (
+                artifact_id TEXT PRIMARY KEY,
+                artifact_kind TEXT NOT NULL,
+                artifact_schema TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                status TEXT,
+                replacement_status TEXT,
+                readiness_status TEXT,
+                review_status TEXT,
+                closure_status TEXT,
+                task_count INTEGER NOT NULL,
+                open_task_count INTEGER NOT NULL,
+                closed_task_count INTEGER NOT NULL,
+                blocked_task_count INTEGER NOT NULL,
+                packet_count INTEGER NOT NULL,
+                owner_count INTEGER NOT NULL,
+                request_count INTEGER NOT NULL,
+                placeholder_source_uri_count INTEGER NOT NULL,
+                live_source_uri_count INTEGER NOT NULL,
+                error_count INTEGER NOT NULL,
+                warning_count INTEGER NOT NULL,
+                generated_at TEXT,
+                summary_json TEXT NOT NULL,
+                sources_json TEXT NOT NULL,
+                next_actions_json TEXT NOT NULL,
+                tasks_json TEXT NOT NULL,
+                packets_json TEXT NOT NULL,
+                requests_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS external_evidence_production_replacement_closures (
                 closure_id TEXT PRIMARY KEY,
                 closure_hash TEXT NOT NULL,
@@ -3024,6 +3095,7 @@ class ControlPlane:
             "roadmap_audits": 0,
             "external_evidence_collection_runs": 0,
             "external_evidence_manifests": 0,
+            "external_evidence_production_replacement_lifecycle": 0,
             "external_evidence_production_replacement_closures": 0,
             "authority_dossiers": 0,
             "phase_scoreboards": 0,
@@ -5731,6 +5803,66 @@ class ControlPlane:
         self.conn.commit()
 
 
+    def index_external_evidence_production_replacement_artifact(self, artifact: dict[str, Any]) -> None:
+        artifact_kind, _id_field, artifact_id = _production_replacement_artifact_info(artifact)
+        summary = artifact.get("summary") if isinstance(artifact.get("summary"), dict) else {}
+        sources = artifact.get("sources") if isinstance(artifact.get("sources"), dict) else {}
+        next_actions = artifact.get("next_actions") if isinstance(artifact.get("next_actions"), list) else []
+        tasks = []
+        for field in ("tasks", "task_reviews", "task_closures"):
+            value = artifact.get(field)
+            if isinstance(value, list):
+                tasks = value
+                break
+        packets = artifact.get("owner_packets") if isinstance(artifact.get("owner_packets"), list) else []
+        if not packets and isinstance(artifact.get("packets"), list):
+            packets = artifact.get("packets")
+        requests = artifact.get("requests") if isinstance(artifact.get("requests"), list) else []
+        self.conn.execute(
+            """
+            INSERT OR REPLACE INTO external_evidence_production_replacement_lifecycle(
+                artifact_id, artifact_kind, artifact_schema, artifact_hash, status,
+                replacement_status, readiness_status, review_status, closure_status,
+                task_count, open_task_count, closed_task_count, blocked_task_count,
+                packet_count, owner_count, request_count,
+                placeholder_source_uri_count, live_source_uri_count,
+                error_count, warning_count, generated_at, summary_json, sources_json,
+                next_actions_json, tasks_json, packets_json, requests_json, body_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                artifact_id,
+                artifact_kind,
+                artifact.get("schema"),
+                content_hash(artifact),
+                _production_replacement_status(summary),
+                summary.get("replacement_status"),
+                summary.get("readiness_status"),
+                summary.get("review_status"),
+                summary.get("closure_status"),
+                _summary_int(summary, "task_count", "source_plan_task_count", "request_count"),
+                _summary_int(summary, "open_task_count"),
+                _summary_int(summary, "closed_task_count"),
+                _summary_int(summary, "blocked_task_count"),
+                _summary_int(summary, "packet_count", "package_count"),
+                _summary_int(summary, "owner_count"),
+                _summary_int(summary, "request_count"),
+                _summary_int(summary, "placeholder_source_uri_count"),
+                _summary_int(summary, "live_source_uri_count"),
+                _summary_int(summary, "error_count", "source_error_count"),
+                _summary_int(summary, "warning_count", "source_warning_count"),
+                artifact.get("generated_at"),
+                _json(summary),
+                _json(sources),
+                _json(next_actions),
+                _json(tasks),
+                _json(packets),
+                _json(requests),
+                _json(artifact),
+            ),
+        )
+        self.conn.commit()
+
     def index_external_evidence_production_replacement_closure(self, closure: dict[str, Any]) -> None:
         if closure.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA:
             raise ValueError(
@@ -5741,6 +5873,7 @@ class ControlPlane:
         expected_id = content_hash(without_keys(closure, "production_replacement_closure_id"))
         if closure_id != expected_id:
             raise ValueError("production_replacement_closure_id does not match canonical closure body")
+        self.index_external_evidence_production_replacement_artifact(closure)
         summary = closure.get("summary") if isinstance(closure.get("summary"), dict) else {}
         sources = closure.get("sources") if isinstance(closure.get("sources"), dict) else {}
         verification = closure.get("verification") if isinstance(closure.get("verification"), dict) else {}
@@ -6305,6 +6438,22 @@ class ControlPlane:
         latest_external_evidence_dict = dict(latest_external_evidence) if latest_external_evidence else None
         if latest_external_evidence_dict is not None:
             _bool_fields(latest_external_evidence_dict, "require_complete", "require_fresh", "require_live_source_uris")
+        latest_production_replacement_lifecycle = self.conn.execute(
+            """
+            SELECT artifact_id, artifact_kind, artifact_schema, artifact_hash,
+                   status, replacement_status, readiness_status, review_status,
+                   closure_status, task_count, open_task_count, closed_task_count,
+                   blocked_task_count, packet_count, owner_count, request_count,
+                   placeholder_source_uri_count, live_source_uri_count,
+                   error_count, warning_count, generated_at
+            FROM external_evidence_production_replacement_lifecycle
+            ORDER BY generated_at DESC, artifact_kind DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_production_replacement_lifecycle_dict = (
+            dict(latest_production_replacement_lifecycle) if latest_production_replacement_lifecycle else None
+        )
         latest_production_replacement_closure = self.conn.execute(
             """
             SELECT closure_id, closure_hash, closure_status, readiness_status,
@@ -6733,6 +6882,7 @@ class ControlPlane:
             "latest_roadmap_audit": dict(latest_roadmap_audit) if latest_roadmap_audit else None,
             "latest_external_evidence_collection_run": latest_collection_run_dict,
             "latest_external_evidence_manifest": latest_external_evidence_dict,
+            "latest_external_evidence_production_replacement_lifecycle": latest_production_replacement_lifecycle_dict,
             "latest_external_evidence_production_replacement_closure": latest_production_replacement_closure_dict,
             "latest_authority_dossier": latest_authority_dossier_dict,
             "latest_byoc_operator_attestation": latest_byoc_operator_dict,
@@ -7244,6 +7394,36 @@ class ControlPlane:
             items.append(item)
         return items
 
+
+    def recent_external_evidence_production_replacement_lifecycle(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, artifact_kind, artifact_schema, artifact_hash,
+                   status, replacement_status, readiness_status, review_status,
+                   closure_status, task_count, open_task_count, closed_task_count,
+                   blocked_task_count, packet_count, owner_count, request_count,
+                   placeholder_source_uri_count, live_source_uri_count,
+                   error_count, warning_count, generated_at, summary_json,
+                   sources_json, next_actions_json, tasks_json, packets_json,
+                   requests_json, body_json
+            FROM external_evidence_production_replacement_lifecycle
+            ORDER BY generated_at DESC, artifact_kind DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["sources"] = _decode_json_object(item.pop("sources_json", None))
+            item["next_actions"] = _decode_json_array(item.pop("next_actions_json", None))
+            item["tasks"] = _decode_json_array(item.pop("tasks_json", None))
+            item["packets"] = _decode_json_array(item.pop("packets_json", None))
+            item["requests"] = _decode_json_array(item.pop("requests_json", None))
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
 
     def recent_external_evidence_production_replacement_closures(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
@@ -8380,6 +8560,7 @@ class ControlPlane:
             "roadmap_audits": self.recent_roadmap_audits(limit),
             "external_evidence_collection_runs": self.recent_external_evidence_collection_runs(limit),
             "external_evidence_manifests": self.recent_external_evidence_manifests(limit),
+            "external_evidence_production_replacement_lifecycle": self.recent_external_evidence_production_replacement_lifecycle(limit),
             "external_evidence_production_replacement_closures": self.recent_external_evidence_production_replacement_closures(limit),
             "evidence_chain_trust_evidence": self.evidence_chain_trust_evidence(limit),
             "authority_dossiers": self.recent_authority_dossiers(limit),

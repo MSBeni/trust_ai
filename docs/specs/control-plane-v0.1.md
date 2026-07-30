@@ -38,6 +38,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `roadmap_audits`: roadmap completion audits with local/reference/missing evidence counts.
 - `external_evidence_collection_runs`: retained live-authority collection-run provenance, source-map hashes, strict flags, and collected intake IDs.
 - `external_evidence_manifests`: roadmap external-authority coverage and missing-evidence counts.
+- `external_evidence_production_replacement_lifecycle`: production replacement plan, owner packet bundle, owner-packet status, intake template, submission review, and closure artifacts normalized by artifact kind, status, task/packet/request counts, placeholder URI counts, summaries, tasks, packets, requests, and next actions.
 - `external_evidence_production_replacement_closures`: production replacement closure reports with closure/readiness/review status, placeholder URI counts, blocked task counts, source warnings, blockers, next actions, and task-level closure records.
 - `authority_dossiers`: production authority dossiers with mode, freshness windows, coverage, and missing requirement counts.
 - `byoc_operator_attestations`: BYOC operator, Object Lock, legal hold, keyring, network, backup, and audit-log attestations.
@@ -68,8 +69,8 @@ into queryable registry tables while keeping the chain as the source of truth.
 ## CLI
 
 ```powershell
-python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --production-replacement-closure examples/aitrade/external-evidence/retained-external-evidence-production-replacement-closure.json --db .trustai/control-plane.sqlite --rebuild
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --multi-agent-evidence --agent-inventory-identity-evidence --byoc-evidence --identity-provider-evidence --evidence-chain-trust-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --production-replacement-closures --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --production-replacement-artifact examples/aitrade/external-evidence/retained-external-evidence-production-replacement-plan.json --production-replacement-artifact examples/aitrade/external-evidence/retained-external-evidence-production-replacement-owner-packets.json --production-replacement-artifact examples/aitrade/external-evidence/retained-external-evidence-production-replacement-owner-packet-status.json --production-replacement-artifact examples/aitrade/external-evidence/retained-external-evidence-production-replacement-intake-template.json --production-replacement-artifact examples/aitrade/external-evidence/retained-external-evidence-production-replacement-submission-review.json --production-replacement-closure examples/aitrade/external-evidence/retained-external-evidence-production-replacement-closure.json --db .trustai/control-plane.sqlite --rebuild
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --multi-agent-evidence --agent-inventory-identity-evidence --byoc-evidence --identity-provider-evidence --evidence-chain-trust-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --production-replacement-lifecycle --production-replacement-closures --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -115,6 +116,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/reliability-reports` or `GET /v0/control/reliability-reports`;
 - `GET /v0/readiness` or `GET /v0/control/readiness`;
 - `GET /v0/external-evidence` or `GET /v0/control/external-evidence`;
+- `GET /v0/production-replacement-lifecycle` or `GET /v0/control/production-replacement-lifecycle`;
 - `GET /v0/production-replacement-closures` or `GET /v0/control/production-replacement-closures`;
 - `GET /v0/external-authority-gaps` or `GET /v0/control/external-authority-gaps`, with optional `authority_kind=...`, `requirement_id=...`, and `limit=...` filters;
 - `GET /v0/authority-dossiers` or `GET /v0/control/authority-dossiers`.
@@ -184,7 +186,7 @@ product-scope, vertical-pack, and reliability-report evidence into a conservativ
 The external-evidence list exposes roadmap authority coverage, missing
 requirement IDs, missing requirement-to-authority-kind maps, deterministic
 missing authority unit/task IDs, roadmap requirement titles/phases/priorities,
-authority owner/source hints, and live-evidence counts. The production-replacement-closures list exposes closure status, readiness status, review status, blocked task counts, placeholder source URI counts, source warnings, blockers, next actions, and task-level closure records for replacing retained/reference evidence with production authority sources. The external-authority
+authority owner/source hints, and live-evidence counts. The production-replacement-lifecycle list exposes the retained replacement plan, owner packet bundle, owner-packet status, intake template, submission review, and closure as one ordered control-plane surface with statuses, task/packet/request counts, placeholder source URI counts, next actions, and decoded task lists. The production-replacement-closures list keeps the final closure status, readiness status, review status, blocked task counts, placeholder source URI counts, source warnings, blockers, next actions, and task-level closure records visible for readiness gating. The external-authority
 gap worklist returns the latest deterministic missing-unit tasks with exact
 authority-kind, requirement-ID, and limit filters, plus grouped counts by
 authority kind, collection-priority bucket, requirement phase, and requirement

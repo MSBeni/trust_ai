@@ -124,7 +124,7 @@ The repository keeps the boundary above executable through:
   dependency-free Go verifier source;
 - `scripts/regenerate_retained_external_evidence.py --verify-only`, which
   checks retained authority coverage, source snapshots, intake receipts,
-  readiness, production-replacement closure state, collection-run evidence, and bundle source counts;
+  readiness, production-replacement lifecycle and closure state, collection-run evidence, and bundle source counts;
 - `tests/test_repository_ci.py`, `tests/test_roadmap_audit.py`, and
   `tests/test_external_evidence.py`, which guard the CI workflow, roadmap
   evidence hashes, retained authority counts, and strict production-readiness

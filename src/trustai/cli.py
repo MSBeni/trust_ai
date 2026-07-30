@@ -1206,6 +1206,7 @@ from .external_evidence import (
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
     EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY,
@@ -2844,9 +2845,24 @@ def cmd_control_index(args: argparse.Namespace) -> int:
                     print(f"- {error}", file=sys.stderr)
                 return 1
             control.index_proof_pack(pack, args.pack)
+        for artifact_path in args.production_replacement_artifact:
+            artifact = _load_json(artifact_path)
+            if artifact.get("schema") == EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA:
+                control.index_external_evidence_production_replacement_closure(artifact)
+                counts["external_evidence_production_replacement_closures"] = (
+                    counts.get("external_evidence_production_replacement_closures", 0) + 1
+                )
+            else:
+                control.index_external_evidence_production_replacement_artifact(artifact)
+            counts["external_evidence_production_replacement_lifecycle"] = (
+                counts.get("external_evidence_production_replacement_lifecycle", 0) + 1
+            )
         for closure_path in args.production_replacement_closure:
             closure = load_external_evidence_production_replacement_closure(closure_path)
             control.index_external_evidence_production_replacement_closure(closure)
+            counts["external_evidence_production_replacement_lifecycle"] = (
+                counts.get("external_evidence_production_replacement_lifecycle", 0) + 1
+            )
             counts["external_evidence_production_replacement_closures"] = (
                 counts.get("external_evidence_production_replacement_closures", 0) + 1
             )
@@ -2933,6 +2949,10 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["readiness"] = control.readiness()
         if args.external_evidence:
             summary["external_evidence_manifests"] = control.recent_external_evidence_manifests()
+        if args.production_replacement_lifecycle:
+            summary["external_evidence_production_replacement_lifecycle"] = (
+                control.recent_external_evidence_production_replacement_lifecycle()
+            )
         if args.production_replacement_closures:
             summary["external_evidence_production_replacement_closures"] = (
                 control.recent_external_evidence_production_replacement_closures()
@@ -23536,6 +23556,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_index = subparsers.add_parser("control-index", help="index a chain and optional proof pack into the local control-plane database")
     control_index.add_argument("--db", default=".trustai/control-plane.sqlite")
     control_index.add_argument("--pack")
+    control_index.add_argument("--production-replacement-artifact", action="append", default=[], help="index a production replacement lifecycle artifact")
     control_index.add_argument("--production-replacement-closure", action="append", default=[], help="index an external evidence production replacement closure artifact")
     control_index.add_argument("--rebuild", action="store_true", help="clear the read model before indexing the supplied chain and proof pack")
     _add_state_args(control_index)
@@ -23578,6 +23599,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--reliability-reports", action="store_true")
     control_summary.add_argument("--readiness", action="store_true")
     control_summary.add_argument("--external-evidence", action="store_true")
+    control_summary.add_argument("--production-replacement-lifecycle", action="store_true")
     control_summary.add_argument("--production-replacement-closures", action="store_true")
     control_summary.add_argument("--external-authority-gaps", action="store_true")
     control_summary.add_argument("--authority-kind", help="filter --external-authority-gaps by exact authority kind")
