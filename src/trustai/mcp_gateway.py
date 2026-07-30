@@ -107,16 +107,7 @@ def load_mcp_client_messages(path: str | Path) -> list[dict[str, Any]]:
         value = value["messages"]
     if not isinstance(value, list) or not value:
         raise ValueError("MCP client messages must contain a non-empty list or messages list")
-    messages: list[dict[str, Any]] = []
-    for index, message in enumerate(value):
-        if not isinstance(message, dict):
-            raise ValueError(f"MCP client message {index} must be an object")
-        if message.get("jsonrpc") != JSONRPC_VERSION:
-            raise ValueError(f"MCP client message {index} must use JSON-RPC 2.0")
-        if "id" not in message or message.get("id") is None:
-            raise ValueError(f"MCP client message {index} missing JSON-RPC id")
-        messages.append(json.loads(json.dumps(message, sort_keys=True)))
-    return messages
+    return _normalize_client_messages(value)
 
 
 def build_mcp_stdio_proxy_event_export(
@@ -140,6 +131,7 @@ def build_mcp_stdio_proxy_event_export(
     timestamp = captured_at or utc_now()
     parse_rfc3339(timestamp)
     messages = _normalize_client_messages(client_messages)
+    notification_count = sum(1 for message in messages if not _jsonrpc_has_id(message))
     stdin_payload = "".join(json.dumps(message, sort_keys=True, separators=(",", ":")) + "\n" for message in messages)
     try:
         completed = subprocess.run(
@@ -160,15 +152,15 @@ def build_mcp_stdio_proxy_event_export(
         stdout_target.parent.mkdir(parents=True, exist_ok=True)
         stdout_target.write_bytes(stdout_bytes)
     responses = _parse_mcp_json_lines(completed.stdout, "upstream stdout")
-    if len(responses) != len(messages):
-        raise ValueError(f"MCP stdio upstream returned {len(responses)} responses for {len(messages)} requests")
-    for index, (request, response) in enumerate(zip(messages, responses)):
-        if response.get("id") != request.get("id"):
-            raise ValueError(f"MCP stdio response {index} id does not match request id")
+    matched_responses = _match_mcp_stdio_responses(messages, responses)
 
     raw_events: list[dict[str, Any]] = []
-    for request, response in zip(messages, responses):
+    for request in messages:
         raw_events.append({"direction": "client_to_server", "timestamp": timestamp, "session_id": session_id, "message": request})
+        if not _jsonrpc_has_id(request):
+            continue
+        _, request_key = _jsonrpc_request_identity(request, "MCP stdio client message")
+        response = matched_responses[request_key]
         raw_events.append({"direction": "server_to_client", "timestamp": timestamp, "session_id": session_id, "message": response})
     event_records = build_mcp_proxy_event_chain(raw_events)
     redacted_events = [record["event"] for record in event_records]
@@ -187,7 +179,10 @@ def build_mcp_stdio_proxy_event_export(
         "upstream_ref": upstream_ref,
         "upstream_command": list(upstream_command),
         "request_count": len(messages),
+        "client_message_count": len(messages),
+        "client_notification_count": notification_count,
         "response_count": len(responses),
+        "server_message_count": len(responses),
         "event_count": len(redacted_events),
         "tool_call_count": len(tool_calls),
         "event_chain_root": event_records[-1]["event_hash"],
@@ -266,10 +261,22 @@ def verify_mcp_stdio_proxy_event_export(
             errors.append("MCP stdio proxy tool_call_count mismatch")
     client_messages = [event.get("message") for event in events if isinstance(event, dict) and event.get("direction") == "client_to_server"]
     stdout_messages = [event.get("message") for event in events if isinstance(event, dict) and event.get("direction") == "server_to_client"]
+    client_notification_count = sum(1 for message in client_messages if isinstance(message, dict) and not _jsonrpc_has_id(message))
+    stdout_response_count = sum(1 for message in stdout_messages if isinstance(message, dict) and _jsonrpc_has_id(message))
     if export.get("request_count") != len(client_messages):
         errors.append("MCP stdio proxy request_count mismatch")
-    if export.get("response_count") != len(stdout_messages):
+    if export.get("client_message_count") not in (None, len(client_messages)):
+        errors.append("MCP stdio proxy client_message_count mismatch")
+    if export.get("client_notification_count") not in (None, client_notification_count):
+        errors.append("MCP stdio proxy client_notification_count mismatch")
+    if export.get("response_count") != stdout_response_count:
         errors.append("MCP stdio proxy response_count mismatch")
+    if export.get("server_message_count") not in (None, len(stdout_messages)):
+        errors.append("MCP stdio proxy server_message_count mismatch")
+    try:
+        _match_mcp_stdio_responses(client_messages, stdout_messages)
+    except (TypeError, ValueError) as exc:
+        errors.append(f"MCP stdio proxy response matching failed: {exc}")
     client_artifact = export.get("client_messages_artifact")
     if client_artifact is not None:
         if not isinstance(client_artifact, dict):
@@ -317,8 +324,10 @@ def _normalize_client_messages(messages: list[dict[str, Any]]) -> list[dict[str,
         if not isinstance(message, dict):
             raise ValueError(f"MCP client message {index} must be an object")
         _require_jsonrpc_2(message, f"MCP client message {index}")
-        if "id" not in message or message.get("id") is None:
-            raise ValueError(f"MCP client message {index} missing JSON-RPC id")
+        if _jsonrpc_has_id(message):
+            _jsonrpc_request_identity(message, f"MCP client message {index}")
+        else:
+            _require_jsonrpc_notification(message, f"MCP client message {index}")
         normalized.append(json.loads(json.dumps(message, sort_keys=True)))
     return normalized
 
@@ -338,6 +347,42 @@ def _parse_mcp_json_lines(text: str, label: str) -> list[dict[str, Any]]:
         _require_jsonrpc_2(parsed, f"{label} line {line_number}")
         messages.append(parsed)
     return messages
+
+
+def _match_mcp_stdio_responses(
+    client_messages: list[dict[str, Any]],
+    stdout_messages: list[dict[str, Any]],
+) -> dict[tuple[str, str | int], dict[str, Any]]:
+    requests: dict[tuple[str, str | int], str] = {}
+    for index, message in enumerate(client_messages):
+        if not isinstance(message, dict):
+            raise ValueError(f"MCP stdio client message {index} must be an object")
+        _require_jsonrpc_2(message, f"MCP stdio client message {index}")
+        if _jsonrpc_has_id(message):
+            request_id, request_key = _jsonrpc_request_identity(message, f"MCP stdio client message {index}")
+            if request_key in requests:
+                raise ValueError(f"duplicate MCP stdio client request id: {request_id}")
+            requests[request_key] = request_id
+        else:
+            _require_jsonrpc_notification(message, f"MCP stdio client message {index}")
+
+    responses: dict[tuple[str, str | int], dict[str, Any]] = {}
+    for index, message in enumerate(stdout_messages):
+        if not isinstance(message, dict):
+            raise ValueError(f"MCP stdio response {index} must be an object")
+        _require_jsonrpc_2(message, f"MCP stdio response {index}")
+        response_id, response_key = _jsonrpc_request_identity(message, f"MCP stdio response {index}")
+        if response_key in responses:
+            raise ValueError(f"duplicate MCP stdio response id: {response_id}")
+        if response_key not in requests:
+            raise ValueError(f"MCP stdio response {index} id does not match any client request id: {response_id}")
+        _jsonrpc_response_payload(message, response_id)
+        responses[response_key] = json.loads(json.dumps(message, sort_keys=True))
+
+    missing = sorted(request_id for request_key, request_id in requests.items() if request_key not in responses)
+    if missing:
+        raise ValueError("MCP stdio upstream did not return responses for request ids: " + ", ".join(missing))
+    return responses
 
 
 def build_mcp_proxy_capture(
@@ -859,6 +904,19 @@ def _require_jsonrpc_2(message: dict[str, Any], context: str) -> None:
         raise ValueError(f"{context} must use JSON-RPC 2.0")
 
 
+def _jsonrpc_has_id(message: dict[str, Any]) -> bool:
+    return "id" in message
+
+
+def _require_jsonrpc_notification(message: dict[str, Any], context: str) -> None:
+    if _jsonrpc_has_id(message):
+        raise ValueError(f"{context} JSON-RPC notification must omit id")
+    if not isinstance(message.get("method"), str) or not message.get("method"):
+        raise ValueError(f"{context} JSON-RPC notification must include method")
+    if "result" in message or "error" in message:
+        raise ValueError(f"{context} JSON-RPC notification must not contain result or error")
+
+
 def _jsonrpc_request_identity(message: dict[str, Any], context: str) -> tuple[str, tuple[str, str | int]]:
     if "id" not in message or message.get("id") is None:
         raise ValueError(f"{context} missing JSON-RPC id")
@@ -953,6 +1011,8 @@ def _mcp_client_messages_artifact(path: str | Path, expected_redacted_messages: 
         "source_content_hash": content_hash(parsed),
         "redacted_messages_hash": content_hash(redacted_messages),
         "request_count": len(redacted_messages),
+        "client_message_count": len(redacted_messages),
+        "client_notification_count": sum(1 for message in redacted_messages if not _jsonrpc_has_id(message)),
         "message_hashes": [content_hash(message) for message in redacted_messages],
     }
     return {**body, "artifact_id": content_hash(body)}
@@ -975,7 +1035,8 @@ def _mcp_stdio_stdout_artifact(path: str | Path, expected_redacted_responses: li
         "size_bytes": len(data),
         "stdout_content_hash": content_hash(text),
         "redacted_responses_hash": content_hash(redacted_responses),
-        "response_count": len(redacted_responses),
+        "response_count": sum(1 for response in redacted_responses if _jsonrpc_has_id(response)),
+        "server_message_count": len(redacted_responses),
         "response_hashes": [content_hash(response) for response in redacted_responses],
     }
     return {**body, "artifact_id": content_hash(body)}

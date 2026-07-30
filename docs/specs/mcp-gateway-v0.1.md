@@ -86,17 +86,21 @@ a JSON message list, or an object with `messages`, forwards each client request 
 an upstream command, captures one response per request, validates JSON-RPC 2.0 and
 matching ids, redacts sensitive fields, and writes a
 `trustai.mcp-proxy-stdio-session/0.1` event export. The export records the
-upstream command, request/response counts, event chain root, redacted events,
-upstream stdout hash/size, and stderr hash/size without retaining stderr
-contents. When artifact paths are supplied, the export also records
+upstream command, client-message/request counts, response counts, notification
+counts, event chain root, redacted events, upstream stdout hash/size, and stderr
+hash/size without retaining stderr contents. Client-to-server JSON-RPC
+notifications omit `id`, are retained in the signed event chain, and do not
+require an upstream response; every id-bearing client request still requires a
+matching JSON-RPC response with exactly one of `result` or `error`. When artifact
+paths are supplied, the export also records
 `client_messages_artifact` and `stdout_artifact` bindings with normalized paths,
 byte SHA-256 values, sizes, redacted message/response hashes, per-message hashes,
 counts, and artifact ids. Verification replays the retained client message file
 and raw upstream stdout JSONL response bytes, redacts sensitive fields, and
 rejects byte changes even when the parsed JSON-RPC messages are unchanged.
 Verification also requires every redacted event to match the exported session
-id, replays the matched `tools/call` request/response count from the event chain,
-and checks the top-level `stdout_sha256` and
+id, replays notification-aware request/response matching, replays the matched
+`tools/call` request/response count from the event chain, and checks the top-level `stdout_sha256` and
 `stdout_size_bytes` claims against the retained `stdout_artifact`, so a
 canonicalized export cannot carry misleading summary digests while the embedded
 artifact binding remains valid.

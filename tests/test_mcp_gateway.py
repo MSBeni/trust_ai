@@ -425,6 +425,95 @@ class McpGatewayTests(unittest.TestCase):
             cli_capture = json.loads(capture_path.read_text(encoding="utf-8"))
             self.assertTrue(verify_mcp_proxy_capture(cli_capture, source_events_path=events_path).ok)
 
+    def test_mcp_stdio_proxy_records_client_notifications_without_responses(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            upstream = tmp / "upstream_mcp.py"
+            upstream.write_text(
+                "import json, sys\n"
+                "for line in sys.stdin:\n"
+                "    message = json.loads(line)\n"
+                "    if 'id' not in message:\n"
+                "        assert message.get('method') == 'notifications/initialized'\n"
+                "        continue\n"
+                "    params = message.get('params', {})\n"
+                "    arguments = params.get('arguments', {})\n"
+                "    response = {'jsonrpc': '2.0', 'id': message['id'], 'result': {'status': 'accepted', 'tool': params.get('name'), 'notional_usd': arguments.get('notional_usd')}}\n"
+                "    print(json.dumps(response, sort_keys=True), flush=True)\n",
+                encoding="utf-8",
+            )
+            messages = tmp / "client-messages.json"
+            stdout_path = tmp / "mcp-proxy-stdio-stdout.jsonl"
+            events_path = tmp / "mcp-proxy-stdio-events.json"
+            messages.write_text(
+                json.dumps(
+                    {
+                        "messages": [
+                            {
+                                "jsonrpc": "2.0",
+                                "method": "notifications/initialized",
+                                "params": {"authorization": "Bearer secret-token", "client": "aitrade-cli"},
+                            },
+                            {
+                                "jsonrpc": "2.0",
+                                "id": "tool-call-stdio-001",
+                                "method": "tools/call",
+                                "params": {"name": "place_shadow_order", "arguments": {"notional_usd": 2500}},
+                            },
+                        ]
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            event_export = build_mcp_stdio_proxy_event_export(
+                load_mcp_client_messages(messages),
+                upstream_command=[sys.executable, str(upstream)],
+                session_id="stdio-session-001",
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/stdio-test",
+                upstream_ref="mcp-server:test/upstream",
+                captured_at="2026-07-03T12:00:12Z",
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+            event_result = verify_mcp_stdio_proxy_event_export(
+                event_export,
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+            events_path.write_text(json.dumps(event_export, indent=2, sort_keys=True), encoding="utf-8")
+            capture = build_mcp_proxy_capture(
+                load_mcp_proxy_events(events_path),
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/stdio-test",
+                upstream_ref="mcp-server:test/upstream",
+                session_id="stdio-session-001",
+                captured_at="2026-07-03T12:00:12Z",
+                source_events_path=events_path,
+            )
+            capture_result = verify_mcp_proxy_capture(capture, source_events_path=events_path)
+
+        self.assertTrue(event_result.ok, event_result.errors)
+        self.assertTrue(capture_result.ok, capture_result.errors)
+        self.assertEqual(2, event_export["request_count"])
+        self.assertEqual(2, event_export["client_message_count"])
+        self.assertEqual(1, event_export["client_notification_count"])
+        self.assertEqual(1, event_export["response_count"])
+        self.assertEqual(1, event_export["server_message_count"])
+        self.assertEqual(3, event_export["event_count"])
+        self.assertEqual(1, event_export["tool_call_count"])
+        self.assertEqual("notifications/initialized", event_export["events"][0]["message"]["method"])
+        self.assertEqual("[REDACTED]", event_export["events"][0]["message"]["params"]["authorization"])
+        self.assertEqual("server_to_client", event_export["events"][2]["direction"])
+        self.assertEqual(1, event_export["client_messages_artifact"]["client_notification_count"])
+        self.assertEqual(1, event_export["stdout_artifact"]["response_count"])
+        self.assertEqual("accepted", capture["tool_calls"][0]["response"]["status"])
+
     def test_mcp_stdio_proxy_event_export_replays_tool_call_count(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

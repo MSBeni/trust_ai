@@ -1,5 +1,5 @@
 {
-  "audit_id": "c6752659110ddbd6bba928a98763cd5e0e53f022ccaefd19f59aadce12fb0b57",
+  "audit_id": "607ca86ebb73c218088de7f812d683671bdf70ed410cbc5e65d790752fbe04f2",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -92,7 +92,7 @@
         {
           "path": "tests/test_mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:ebcc1c1e28f141a299378dca6e5782c59cbad80d74d39fd34a43de306f35257e"
+          "sha256": "sha256:bde27c10a3d162a8b120553a41accda75f75d6be1b41dd66ce804ca26c40210e"
         },
         {
           "path": "tests/test_mcp_gateway_authority.py",
@@ -379,7 +379,7 @@
         {
           "path": "docs/specs/mcp-gateway-v0.1.md",
           "present": true,
-          "sha256": "sha256:21a0c207ba6cf43e99b731f7e9d1862232d1f3b29df483b4c29ee947e4a594fd"
+          "sha256": "sha256:1f8caa77408a9ee8359d89c8527adc66271dd93bf91c95cec805321a0e130286"
         },
         {
           "path": "src/trustai/onboarding.py",
@@ -419,7 +419,7 @@
         {
           "path": "src/trustai/mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:56e420adea2883fc982c033d641b71995c2792791418f6bfcbdeac73532725a3"
+          "sha256": "sha256:cdb731680e879bbe334ff165b59efb0914680ddc7f647366140cc303085162bf"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -524,7 +524,7 @@
         {
           "path": "tests/test_mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:ebcc1c1e28f141a299378dca6e5782c59cbad80d74d39fd34a43de306f35257e"
+          "sha256": "sha256:bde27c10a3d162a8b120553a41accda75f75d6be1b41dd66ce804ca26c40210e"
         }
       ],
       "evidence_count": 35,
@@ -545,7 +545,7 @@
         {
           "path": "docs/specs/mcp-gateway-v0.1.md",
           "present": true,
-          "sha256": "sha256:21a0c207ba6cf43e99b731f7e9d1862232d1f3b29df483b4c29ee947e4a594fd"
+          "sha256": "sha256:1f8caa77408a9ee8359d89c8527adc66271dd93bf91c95cec805321a0e130286"
         },
         {
           "path": "docs/specs/mcp-gateway-production-authority-v0.1.md",
@@ -555,7 +555,7 @@
         {
           "path": "src/trustai/mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:56e420adea2883fc982c033d641b71995c2792791418f6bfcbdeac73532725a3"
+          "sha256": "sha256:cdb731680e879bbe334ff165b59efb0914680ddc7f647366140cc303085162bf"
         },
         {
           "path": "src/trustai/mcp_gateway_authority.py",
@@ -585,7 +585,7 @@
         {
           "path": "tests/test_mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:ebcc1c1e28f141a299378dca6e5782c59cbad80d74d39fd34a43de306f35257e"
+          "sha256": "sha256:bde27c10a3d162a8b120553a41accda75f75d6be1b41dd66ce804ca26c40210e"
         },
         {
           "path": "tests/test_mcp_gateway_authority.py",
@@ -903,7 +903,7 @@
         {
           "path": "docs/specs/mcp-gateway-v0.1.md",
           "present": true,
-          "sha256": "sha256:21a0c207ba6cf43e99b731f7e9d1862232d1f3b29df483b4c29ee947e4a594fd"
+          "sha256": "sha256:1f8caa77408a9ee8359d89c8527adc66271dd93bf91c95cec805321a0e130286"
         },
         {
           "path": "docs/specs/shadow-replay-v0.1.md",
@@ -938,7 +938,7 @@
         {
           "path": "src/trustai/mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:56e420adea2883fc982c033d641b71995c2792791418f6bfcbdeac73532725a3"
+          "sha256": "sha256:cdb731680e879bbe334ff165b59efb0914680ddc7f647366140cc303085162bf"
         },
         {
           "path": "src/trustai/shadow.py",
