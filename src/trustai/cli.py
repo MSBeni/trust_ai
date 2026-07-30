@@ -2844,6 +2844,12 @@ def cmd_control_index(args: argparse.Namespace) -> int:
                     print(f"- {error}", file=sys.stderr)
                 return 1
             control.index_proof_pack(pack, args.pack)
+        for closure_path in args.production_replacement_closure:
+            closure = load_external_evidence_production_replacement_closure(closure_path)
+            control.index_external_evidence_production_replacement_closure(closure)
+            counts["external_evidence_production_replacement_closures"] = (
+                counts.get("external_evidence_production_replacement_closures", 0) + 1
+            )
         print(json.dumps({"indexed": counts, "summary": control.summary()}, indent=2, sort_keys=True))
         return 0
     finally:
@@ -2927,6 +2933,10 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["readiness"] = control.readiness()
         if args.external_evidence:
             summary["external_evidence_manifests"] = control.recent_external_evidence_manifests()
+        if args.production_replacement_closures:
+            summary["external_evidence_production_replacement_closures"] = (
+                control.recent_external_evidence_production_replacement_closures()
+            )
         if args.external_authority_gaps:
             try:
                 summary["external_authority_gaps"] = control.external_authority_gaps(
@@ -23526,6 +23536,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_index = subparsers.add_parser("control-index", help="index a chain and optional proof pack into the local control-plane database")
     control_index.add_argument("--db", default=".trustai/control-plane.sqlite")
     control_index.add_argument("--pack")
+    control_index.add_argument("--production-replacement-closure", action="append", default=[], help="index an external evidence production replacement closure artifact")
     control_index.add_argument("--rebuild", action="store_true", help="clear the read model before indexing the supplied chain and proof pack")
     _add_state_args(control_index)
     control_index.set_defaults(func=cmd_control_index)
@@ -23567,6 +23578,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--reliability-reports", action="store_true")
     control_summary.add_argument("--readiness", action="store_true")
     control_summary.add_argument("--external-evidence", action="store_true")
+    control_summary.add_argument("--production-replacement-closures", action="store_true")
     control_summary.add_argument("--external-authority-gaps", action="store_true")
     control_summary.add_argument("--authority-kind", help="filter --external-authority-gaps by exact authority kind")
     control_summary.add_argument("--requirement-id", help="filter --external-authority-gaps by exact roadmap requirement ID")

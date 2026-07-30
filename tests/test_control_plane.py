@@ -31,6 +31,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
     append_external_evidence_manifest,
     build_external_evidence_manifest,
+    load_external_evidence_production_replacement_closure,
 )
 from trustai.eu_ai_act import build_eu_ai_act_document
 from trustai.eu_data_plane import EU_DATA_PLANE_ENTRY_TYPE
@@ -195,6 +196,7 @@ def _complete_shadow_authority_evidence() -> list[dict]:
     return rows
 
 ROOT = Path(__file__).resolve().parents[1]
+RETAINED_PRODUCTION_REPLACEMENT_CLOSURE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-closure.json"
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
@@ -913,6 +915,10 @@ class ControlPlaneTests(unittest.TestCase):
             try:
                 counts = control.index_chain(chain)
                 control.index_proof_pack(pack, tmp / "pack.json")
+                production_replacement_closure = load_external_evidence_production_replacement_closure(
+                    RETAINED_PRODUCTION_REPLACEMENT_CLOSURE
+                )
+                control.index_external_evidence_production_replacement_closure(production_replacement_closure)
                 summary = control.summary()
 
                 self.assertGreaterEqual(counts["chain_entries"], 5)
@@ -942,6 +948,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["roadmap_audits"])
                 self.assertEqual(1, summary["counts"]["external_evidence_collection_runs"])
                 self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
+                self.assertEqual(1, summary["counts"]["external_evidence_production_replacement_closures"])
                 self.assertEqual(2, summary["counts"]["authority_dossiers"])
                 self.assertEqual(1, summary["counts"]["phase_scoreboards"])
                 self.assertEqual(1, summary["counts"]["design_partner_dossiers"])
@@ -981,6 +988,15 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, summary["latest_external_evidence_collection_run"]["collected_count"])
                 self.assertEqual("partial", summary["latest_external_evidence_manifest"]["status"])
                 self.assertGreater(summary["latest_external_evidence_manifest"]["missing_authority_kind_count"], 0)
+                latest_production_replacement_closure = summary["latest_external_evidence_production_replacement_closure"]
+                self.assertEqual(
+                    production_replacement_closure["production_replacement_closure_id"],
+                    latest_production_replacement_closure["closure_id"],
+                )
+                self.assertEqual("blocked", latest_production_replacement_closure["closure_status"])
+                self.assertEqual("not-ready", latest_production_replacement_closure["readiness_status"])
+                self.assertEqual(72, latest_production_replacement_closure["task_count"])
+                self.assertEqual(72, latest_production_replacement_closure["blocked_task_count"])
                 self.assertEqual(mcp_authority_bundle["bundle_id"], summary["latest_mcp_gateway_authority_evidence_bundle"]["bundle_id"])
                 self.assertEqual(2, summary["latest_mcp_gateway_authority_evidence_bundle"]["covered_requirement_count"])
                 self.assertEqual(shadow_authority_entry["payload"]["dossier_id"], summary["latest_authority_dossier"]["dossier_id"])
@@ -1179,6 +1195,10 @@ class ControlPlaneTests(unittest.TestCase):
                     roadmap_evidence["external_evidence_collection_runs"][0]["intake_ids"],
                 )
                 self.assertEqual(1, len(roadmap_evidence["external_evidence_manifests"]))
+                self.assertEqual(1, len(roadmap_evidence["external_evidence_production_replacement_closures"]))
+                production_replacement_closure_row = roadmap_evidence["external_evidence_production_replacement_closures"][0]
+                self.assertEqual("blocked", production_replacement_closure_row["closure_status"])
+                self.assertEqual(72, len(production_replacement_closure_row["task_closures"]))
                 self.assertEqual(1, len(roadmap_evidence["phase_scoreboards"]))
                 self.assertEqual(1, len(roadmap_evidence["design_partner_dossiers"]))
                 self.assertEqual(1, len(roadmap_evidence["own_compliance_dossiers"]))
@@ -1228,6 +1248,10 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertTrue(readiness["local_reference_complete"])
                 self.assertTrue(readiness["collection_run_present"])
                 self.assertTrue(readiness["collection_run_complete"])
+                self.assertTrue(readiness["production_replacement_closure_present"])
+                self.assertFalse(readiness["production_replacement_closure_closed"])
+                self.assertEqual(72, readiness["production_replacement_closure_summary"]["blocked_task_count"])
+                self.assertEqual(72, readiness["production_replacement_closure_summary"]["placeholder_source_uri_count"])
                 self.assertFalse(readiness["external_authority_complete"])
                 self.assertGreater(readiness["external_authority_gap_summary"]["missing_authority_unit_count"], 0)
                 self.assertIn("provider-api", readiness["external_authority_gap_summary"]["gap_count_by_authority_kind"])
@@ -1263,6 +1287,9 @@ class ControlPlaneTests(unittest.TestCase):
                     any("external authority evidence incomplete" in blocker for blocker in readiness["blockers"])
                 )
                 self.assertTrue(
+                    any("production replacement closure is not closed" in blocker for blocker in readiness["blockers"])
+                )
+                self.assertTrue(
                     any("roadmap phase scoreboard milestones incomplete" in blocker for blocker in readiness["blockers"])
                 )
                 self.assertTrue(
@@ -1277,6 +1304,11 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertTrue(
                     any("State of Agent Reliability publication incomplete" in blocker for blocker in readiness["blockers"])
                 )
+                production_replacement_closures = control.recent_external_evidence_production_replacement_closures()
+                self.assertEqual(1, len(production_replacement_closures))
+                self.assertEqual("blocked", production_replacement_closures[0]["summary"]["closure_status"])
+                self.assertEqual(72, len(production_replacement_closures[0]["task_closures"]))
+                self.assertGreaterEqual(len(production_replacement_closures[0]["next_actions"]), 1)
                 external_evidence = control.recent_external_evidence_manifests()
                 self.assertEqual(1, len(external_evidence))
                 self.assertEqual("partial", external_evidence[0]["status"])

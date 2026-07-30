@@ -13,6 +13,7 @@ from .chain import EvidenceChain
 from .consent import INSURER_SCOPE, consent_status
 from .contracts import load_contract
 from .control_plane import ControlPlane
+from .external_evidence import load_external_evidence_production_replacement_closure
 from .ingest import append_events, append_otlp_traces
 from .insurer import build_insurer_telemetry
 from .provider_lifecycle import load_provider_lifecycle_manifest
@@ -436,6 +437,18 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/production-replacement-closures", "/v0/control/production-replacement-closures"):
+            control = self._control()
+            try:
+                self._json_response(
+                    200,
+                    {
+                        "external_evidence_production_replacement_closures": control.recent_external_evidence_production_replacement_closures()
+                    },
+                )
+            finally:
+                control.close()
+            return
         if parsed.path in ("/v0/external-authority-gaps", "/v0/control/external-authority-gaps"):
             query = parse_qs(parsed.query)
             raw_limit = (query.get("limit") or [None])[0]
@@ -500,6 +513,23 @@ class TrustAIHandler(BaseHTTPRequestHandler):
                         self._json_response(422, {"ok": False, "errors": result.errors})
                         return
                     control.index_proof_pack(pack, body["proof_pack_path"])
+                closure_paths = []
+                if body.get("production_replacement_closure_path"):
+                    closure_paths.append(body["production_replacement_closure_path"])
+                raw_closure_paths = body.get("production_replacement_closure_paths") or []
+                if isinstance(raw_closure_paths, str):
+                    closure_paths.append(raw_closure_paths)
+                elif isinstance(raw_closure_paths, list):
+                    closure_paths.extend(raw_closure_paths)
+                elif raw_closure_paths:
+                    self._json_response(422, {"ok": False, "error": "production_replacement_closure_paths must be a string or list"})
+                    return
+                for closure_path in closure_paths:
+                    closure = load_external_evidence_production_replacement_closure(str(closure_path))
+                    control.index_external_evidence_production_replacement_closure(closure)
+                    counts["external_evidence_production_replacement_closures"] = (
+                        counts.get("external_evidence_production_replacement_closures", 0) + 1
+                    )
                 self._json_response(200, {"ok": True, "indexed": counts, "summary": control.summary()})
             finally:
                 control.close()

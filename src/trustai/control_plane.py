@@ -18,7 +18,7 @@ from .auditor_program_governance import AUDITOR_PROGRAM_GOVERNANCE_ENTRY_TYPE
 from .auditor_program_sponsorship import AUDITOR_PROGRAM_SPONSORSHIP_ENTRY_TYPE
 from .byoc_authority import BYOC_AUTHORITY_ENTRY_TYPE
 from .byoc_operator import BYOC_OPERATOR_ENTRY_TYPE
-from .canonical import content_hash, parse_rfc3339, utc_now
+from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .compliance_authority import COMPLIANCE_AUTHORITY_ENTRY_TYPE
@@ -34,6 +34,7 @@ from .external_evidence import (
     AUTHORITY_KIND_ORDER,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA,
 )
 from .framework_adapter_authority import FRAMEWORK_ADAPTER_AUTHORITY_ENTRY_TYPE
 from .framework_adapter_matrix import FRAMEWORK_ADAPTER_MATRIX_ENTRY_TYPE
@@ -183,6 +184,7 @@ INDEX_TABLES = (
     "roadmap_audits",
     "external_evidence_collection_runs",
     "external_evidence_manifests",
+    "external_evidence_production_replacement_closures",
     "authority_dossiers",
     "phase_scoreboards",
     "design_partner_dossiers",
@@ -2561,6 +2563,40 @@ class ControlPlane:
                 freshness_checked_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS external_evidence_production_replacement_closures (
+                closure_id TEXT PRIMARY KEY,
+                closure_hash TEXT NOT NULL,
+                closure_status TEXT,
+                readiness_status TEXT,
+                review_status TEXT,
+                task_count INTEGER NOT NULL,
+                closed_task_count INTEGER NOT NULL,
+                blocked_task_count INTEGER NOT NULL,
+                ready_review_task_count INTEGER NOT NULL,
+                blocked_review_task_count INTEGER NOT NULL,
+                placeholder_source_uri_count INTEGER NOT NULL,
+                live_source_uri_count INTEGER NOT NULL,
+                non_production_readiness_task_count INTEGER NOT NULL,
+                readiness_not_ready_task_count INTEGER NOT NULL,
+                source_error_count INTEGER NOT NULL,
+                source_warning_count INTEGER NOT NULL,
+                readiness_blocking_issue_count INTEGER NOT NULL,
+                production_usable_covered_authority_kind_count INTEGER NOT NULL,
+                non_production_covered_authority_kind_count INTEGER NOT NULL,
+                submission_review_id TEXT,
+                submission_review_hash TEXT,
+                readiness_id TEXT,
+                readiness_hash TEXT,
+                generated_at TEXT,
+                summary_json TEXT NOT NULL,
+                sources_json TEXT NOT NULL,
+                verification_json TEXT NOT NULL,
+                blockers_json TEXT NOT NULL,
+                readiness_blockers_json TEXT NOT NULL,
+                next_actions_json TEXT NOT NULL,
+                task_closures_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS authority_dossiers (
                 dossier_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -2988,6 +3024,7 @@ class ControlPlane:
             "roadmap_audits": 0,
             "external_evidence_collection_runs": 0,
             "external_evidence_manifests": 0,
+            "external_evidence_production_replacement_closures": 0,
             "authority_dossiers": 0,
             "phase_scoreboards": 0,
             "design_partner_dossiers": 0,
@@ -5693,6 +5730,88 @@ class ControlPlane:
         )
         self.conn.commit()
 
+
+    def index_external_evidence_production_replacement_closure(self, closure: dict[str, Any]) -> None:
+        if closure.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA:
+            raise ValueError(
+                "unsupported external evidence production replacement closure schema: "
+                f"{closure.get('schema')}"
+            )
+        closure_id = closure.get("production_replacement_closure_id")
+        expected_id = content_hash(without_keys(closure, "production_replacement_closure_id"))
+        if closure_id != expected_id:
+            raise ValueError("production_replacement_closure_id does not match canonical closure body")
+        summary = closure.get("summary") if isinstance(closure.get("summary"), dict) else {}
+        sources = closure.get("sources") if isinstance(closure.get("sources"), dict) else {}
+        verification = closure.get("verification") if isinstance(closure.get("verification"), dict) else {}
+        submission_review = (
+            sources.get("production_replacement_submission_review")
+            if isinstance(sources.get("production_replacement_submission_review"), dict)
+            else {}
+        )
+        readiness = sources.get("readiness") if isinstance(sources.get("readiness"), dict) else {}
+        blockers = closure.get("blockers") if isinstance(closure.get("blockers"), list) else []
+        readiness_blockers = closure.get("readiness_blockers")
+        if not isinstance(readiness_blockers, list):
+            readiness_blockers = [readiness_blockers] if readiness_blockers else []
+        next_actions = closure.get("next_actions") if isinstance(closure.get("next_actions"), list) else []
+        task_closures = closure.get("task_closures") if isinstance(closure.get("task_closures"), list) else []
+        self.conn.execute(
+            """
+            INSERT OR REPLACE INTO external_evidence_production_replacement_closures(
+                closure_id, closure_hash, closure_status, readiness_status,
+                review_status, task_count, closed_task_count, blocked_task_count,
+                ready_review_task_count, blocked_review_task_count,
+                placeholder_source_uri_count, live_source_uri_count,
+                non_production_readiness_task_count, readiness_not_ready_task_count,
+                source_error_count, source_warning_count,
+                readiness_blocking_issue_count,
+                production_usable_covered_authority_kind_count,
+                non_production_covered_authority_kind_count,
+                submission_review_id, submission_review_hash, readiness_id,
+                readiness_hash, generated_at, summary_json, sources_json,
+                verification_json, blockers_json, readiness_blockers_json,
+                next_actions_json, task_closures_json, body_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                closure_id,
+                content_hash(closure),
+                summary.get("closure_status"),
+                summary.get("readiness_status"),
+                summary.get("review_status"),
+                int(summary.get("task_count") or 0),
+                int(summary.get("closed_task_count") or 0),
+                int(summary.get("blocked_task_count") or 0),
+                int(summary.get("ready_review_task_count") or 0),
+                int(summary.get("blocked_review_task_count") or 0),
+                int(summary.get("placeholder_source_uri_count") or 0),
+                int(summary.get("live_source_uri_count") or 0),
+                int(summary.get("non_production_readiness_task_count") or 0),
+                int(summary.get("readiness_not_ready_task_count") or 0),
+                int(summary.get("source_error_count") or 0),
+                int(summary.get("source_warning_count") or 0),
+                int(summary.get("readiness_blocking_issue_count") or 0),
+                int(summary.get("production_usable_covered_authority_kind_count") or 0),
+                int(summary.get("non_production_covered_authority_kind_count") or 0),
+                submission_review.get("production_replacement_submission_review_id"),
+                submission_review.get("production_replacement_submission_review_hash"),
+                readiness.get("readiness_id"),
+                readiness.get("readiness_hash"),
+                closure.get("generated_at"),
+                _json(summary),
+                _json(sources),
+                _json(verification),
+                _json(blockers),
+                _json(readiness_blockers),
+                _json(next_actions),
+                _json(task_closures),
+                _json(closure),
+            ),
+        )
+
+        self.conn.commit()
+
     def summary(self) -> dict[str, Any]:
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
@@ -6186,6 +6305,27 @@ class ControlPlane:
         latest_external_evidence_dict = dict(latest_external_evidence) if latest_external_evidence else None
         if latest_external_evidence_dict is not None:
             _bool_fields(latest_external_evidence_dict, "require_complete", "require_fresh", "require_live_source_uris")
+        latest_production_replacement_closure = self.conn.execute(
+            """
+            SELECT closure_id, closure_hash, closure_status, readiness_status,
+                   review_status, task_count, closed_task_count,
+                   blocked_task_count, ready_review_task_count,
+                   blocked_review_task_count, placeholder_source_uri_count,
+                   live_source_uri_count, non_production_readiness_task_count,
+                   readiness_not_ready_task_count, source_error_count,
+                   source_warning_count, readiness_blocking_issue_count,
+                   production_usable_covered_authority_kind_count,
+                   non_production_covered_authority_kind_count,
+                   submission_review_id, submission_review_hash, readiness_id,
+                   readiness_hash, generated_at
+            FROM external_evidence_production_replacement_closures
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_production_replacement_closure_dict = (
+            dict(latest_production_replacement_closure) if latest_production_replacement_closure else None
+        )
         latest_authority_dossier = self.conn.execute(
             """
             SELECT dossier_id, entry_type, dossier_ref, mode, environment,
@@ -6593,6 +6733,7 @@ class ControlPlane:
             "latest_roadmap_audit": dict(latest_roadmap_audit) if latest_roadmap_audit else None,
             "latest_external_evidence_collection_run": latest_collection_run_dict,
             "latest_external_evidence_manifest": latest_external_evidence_dict,
+            "latest_external_evidence_production_replacement_closure": latest_production_replacement_closure_dict,
             "latest_authority_dossier": latest_authority_dossier_dict,
             "latest_byoc_operator_attestation": latest_byoc_operator_dict,
             "latest_byoc_authority_dossier": latest_byoc_authority_dict,
@@ -7103,6 +7244,42 @@ class ControlPlane:
             items.append(item)
         return items
 
+
+    def recent_external_evidence_production_replacement_closures(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT closure_id, closure_hash, closure_status, readiness_status,
+                   review_status, task_count, closed_task_count,
+                   blocked_task_count, ready_review_task_count,
+                   blocked_review_task_count, placeholder_source_uri_count,
+                   live_source_uri_count, non_production_readiness_task_count,
+                   readiness_not_ready_task_count, source_error_count,
+                   source_warning_count, readiness_blocking_issue_count,
+                   production_usable_covered_authority_kind_count,
+                   non_production_covered_authority_kind_count,
+                   submission_review_id, submission_review_hash, readiness_id,
+                   readiness_hash, generated_at, summary_json, sources_json,
+                   verification_json, blockers_json, readiness_blockers_json,
+                   next_actions_json, task_closures_json, body_json
+            FROM external_evidence_production_replacement_closures
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["sources"] = _decode_json_object(item.pop("sources_json", None))
+            item["verification"] = _decode_json_object(item.pop("verification_json", None))
+            item["blockers"] = _decode_json_array(item.pop("blockers_json", None))
+            item["readiness_blockers"] = _decode_json_array(item.pop("readiness_blockers_json", None))
+            item["next_actions"] = _decode_json_array(item.pop("next_actions_json", None))
+            item["task_closures"] = _decode_json_array(item.pop("task_closures_json", None))
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
     def external_authority_gaps(
         self,
         *,
@@ -8203,6 +8380,7 @@ class ControlPlane:
             "roadmap_audits": self.recent_roadmap_audits(limit),
             "external_evidence_collection_runs": self.recent_external_evidence_collection_runs(limit),
             "external_evidence_manifests": self.recent_external_evidence_manifests(limit),
+            "external_evidence_production_replacement_closures": self.recent_external_evidence_production_replacement_closures(limit),
             "evidence_chain_trust_evidence": self.evidence_chain_trust_evidence(limit),
             "authority_dossiers": self.recent_authority_dossiers(limit),
             "phase_scoreboards": self.recent_phase_scoreboards(limit),
@@ -8466,6 +8644,43 @@ class ControlPlane:
             if not collection_run_strict:
                 blockers.append("latest external-evidence collection run was not collected with strict source snapshot and freshness checks")
 
+
+        latest_production_replacement_closure = summary.get("latest_external_evidence_production_replacement_closure")
+        production_replacement_closure_present = latest_production_replacement_closure is not None
+        production_replacement_closure_closed = bool(
+            latest_production_replacement_closure
+            and latest_production_replacement_closure.get("closure_status") == "closed"
+            and int(latest_production_replacement_closure.get("blocked_task_count") or 0) == 0
+            and int(latest_production_replacement_closure.get("placeholder_source_uri_count") or 0) == 0
+            and int(latest_production_replacement_closure.get("non_production_readiness_task_count") or 0) == 0
+            and latest_production_replacement_closure.get("readiness_status") == "ready"
+        )
+        production_replacement_closure_summary = {
+            "present": production_replacement_closure_present,
+            "closure_status": (latest_production_replacement_closure or {}).get("closure_status"),
+            "readiness_status": (latest_production_replacement_closure or {}).get("readiness_status"),
+            "review_status": (latest_production_replacement_closure or {}).get("review_status"),
+            "task_count": int((latest_production_replacement_closure or {}).get("task_count") or 0),
+            "closed_task_count": int((latest_production_replacement_closure or {}).get("closed_task_count") or 0),
+            "blocked_task_count": int((latest_production_replacement_closure or {}).get("blocked_task_count") or 0),
+            "placeholder_source_uri_count": int((latest_production_replacement_closure or {}).get("placeholder_source_uri_count") or 0),
+            "non_production_readiness_task_count": int((latest_production_replacement_closure or {}).get("non_production_readiness_task_count") or 0),
+            "readiness_not_ready_task_count": int((latest_production_replacement_closure or {}).get("readiness_not_ready_task_count") or 0),
+            "source_error_count": int((latest_production_replacement_closure or {}).get("source_error_count") or 0),
+            "source_warning_count": int((latest_production_replacement_closure or {}).get("source_warning_count") or 0),
+        }
+        if latest_production_replacement_closure is None:
+            blockers.append("no production replacement closure indexed")
+        elif not production_replacement_closure_closed:
+            blockers.append(
+                "production replacement closure is not closed: "
+                f"status={latest_production_replacement_closure.get('closure_status')}, "
+                f"closed-tasks={production_replacement_closure_summary['closed_task_count']}/"
+                f"{production_replacement_closure_summary['task_count']}, "
+                f"blocked-tasks={production_replacement_closure_summary['blocked_task_count']}, "
+                f"placeholder-source-uris={production_replacement_closure_summary['placeholder_source_uri_count']}, "
+                f"readiness-status={latest_production_replacement_closure.get('readiness_status')}"
+            )
         latest_phase_scoreboard = summary.get("latest_phase_scoreboard")
         phase_control_summary = (latest_phase_scoreboard or {}).get("control_summary") or {}
         phase_external_required = int(phase_control_summary.get("external-required") or 0)
@@ -8696,6 +8911,7 @@ class ControlPlane:
                 local_reference_complete,
                 external_authority_complete,
                 collection_run_complete,
+                production_replacement_closure_closed,
                 production_authority_ready,
                 phase_scoreboard_ready,
                 design_partner_ready,
@@ -8715,6 +8931,8 @@ class ControlPlane:
             "external_authority_complete": external_authority_complete,
             "collection_run_present": collection_run_present,
             "collection_run_complete": collection_run_complete,
+            "production_replacement_closure_present": production_replacement_closure_present,
+            "production_replacement_closure_closed": production_replacement_closure_closed,
             "production_authority_ready": production_authority_ready,
             "roadmap_phase_scoreboard_ready": phase_scoreboard_ready,
             "design_partner_ready": design_partner_ready,
@@ -8729,6 +8947,7 @@ class ControlPlane:
             "latest_roadmap_audit": latest_roadmap_audit,
             "latest_external_evidence_manifest": latest_external_manifest,
             "latest_external_evidence_collection_run": latest_collection_run,
+            "latest_external_evidence_production_replacement_closure": latest_production_replacement_closure,
             "latest_authority_dossier": summary.get("latest_authority_dossier"),
             "latest_phase_scoreboard": latest_phase_scoreboard,
             "latest_design_partner_dossier": latest_design_partner_dossier,
@@ -8742,6 +8961,7 @@ class ControlPlane:
             "product_scope_summary": product_scope_summary,
             "vertical_pack_summary": vertical_pack_summary,
             "reliability_report_summary": reliability_report_summary,
+            "production_replacement_closure_summary": production_replacement_closure_summary,
             "authority_dossier_summary": authority_dossier_summary,
             "external_authority_gap_summary": external_gap_summary,
             "remaining_external_evidence_count": deferred_external,
