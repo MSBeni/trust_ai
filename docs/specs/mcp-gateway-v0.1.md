@@ -59,7 +59,10 @@ response; JSON-RPC error responses are preserved under `response.jsonrpc_error`
 and marked with `proxy_capture.response_kind = "error"` rather than being
 converted into an empty success response. Sensitive message fields whose keys
 include token, secret, password, credential, api key, or authorization are
-replaced with `[REDACTED]` before hashing and signing.
+replaced with `[REDACTED]` before hashing and signing. The capture also carries
+a canonical `redaction_summary` with the redacted field count, redacted message
+paths, path-list hash, redacted message hash, and summary id; verification
+recomputes this summary from the signed event messages.
 
 A valid proxy capture must verify:
 
@@ -67,6 +70,8 @@ A valid proxy capture must verify:
 - event hash chain, message hashes, event order, and chain root;
 - retained source export bytes when `proxy_events_artifact` is present;
 - no retained sensitive field value remains unredacted;
+- redaction summary count, paths, path hash, message hash, and summary id match
+  the signed event messages;
 - every `tools/call` request has a matching response;
 - matched tool-call envelopes use JSON-RPC 2.0, stable string/integer ids, and
   exactly one response `result` or `error`;
@@ -75,8 +80,9 @@ A valid proxy capture must verify:
 - transcript root matches the derived tool-call transcript.
 
 Verified captures append `mcp.proxy_capture.evidenced` entries containing the
-capture id, event root, transcript root, event hashes, tool-call hashes, proxy
-ref, upstream ref, session id, agent, and contract hash.
+capture id, event root, transcript root, redaction summary, event hashes,
+tool-call hashes, proxy ref, upstream ref, session id, agent, and contract
+hash.
 
 ## Stdio Proxy Runtime
 
@@ -87,8 +93,9 @@ an upstream command, captures one response per request, validates JSON-RPC 2.0 a
 matching ids, redacts sensitive fields, and writes a
 `trustai.mcp-proxy-stdio-session/0.1` event export. The export records the
 upstream command, client-message/request counts, response counts, notification
-counts, event chain root, redacted events, upstream stdout hash/size, and stderr
-hash/size without retaining stderr contents. Client-to-server JSON-RPC
+counts, event chain root, redacted events, redaction summary, upstream stdout
+hash/size, and stderr hash/size without retaining stderr contents.
+Client-to-server JSON-RPC
 notifications omit `id`, are retained in the signed event chain, and do not
 require an upstream response; every id-bearing client request still requires a
 matching JSON-RPC response with exactly one of `result` or `error`. When artifact
@@ -99,8 +106,9 @@ counts, and artifact ids. Verification replays the retained client message file
 and raw upstream stdout JSONL response bytes, redacts sensitive fields, and
 rejects byte changes even when the parsed JSON-RPC messages are unchanged.
 Verification also requires every redacted event to match the exported session
-id, replays notification-aware request/response matching, replays the matched
-`tools/call` request/response count from the event chain, and checks the top-level `stdout_sha256` and
+id, recomputes the redaction summary, replays notification-aware
+request/response matching, replays the matched `tools/call` request/response
+count from the event chain, and checks the top-level `stdout_sha256` and
 `stdout_size_bytes` claims against the retained `stdout_artifact`, so a
 canonicalized export cannot carry misleading summary digests while the embedded
 artifact binding remains valid.

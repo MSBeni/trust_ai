@@ -104,6 +104,8 @@ class McpGatewayTests(unittest.TestCase):
         self.assertTrue(result.ok, result.errors)
         self.assertEqual(2, capture["event_count"])
         self.assertEqual(1, capture["tool_call_count"])
+        self.assertEqual(1, capture["redaction_summary"]["redacted_field_count"])
+        self.assertEqual(["message[0].authorization"], capture["redaction_summary"]["redacted_paths"])
         self.assertEqual("[REDACTED]", capture["events"][0]["event"]["message"]["authorization"])
         self.assertEqual("place_shadow_order", capture["tool_calls"][0]["tool_name"])
         self.assertEqual({"status": "accepted", "order_id": "shadow-order-20260703-001"}, capture["tool_calls"][0]["response"])
@@ -118,6 +120,7 @@ class McpGatewayTests(unittest.TestCase):
             entry = append_mcp_proxy_capture(chain, capture, source_events_path=MCP_PROXY)
             self.assertEqual(MCP_PROXY_CAPTURE_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(capture["capture_id"], entry["payload"]["capture_id"])
+            self.assertEqual(capture["redaction_summary"], entry["payload"]["redaction_summary"])
             self.assertEqual(capture["proxy_events_artifact"]["sha256"], entry["payload"]["proxy_events_artifact"]["sha256"])
             self.assertTrue(chain.verify_all().ok)
 
@@ -187,6 +190,31 @@ class McpGatewayTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("capture_id" in error for error in result.errors))
         self.assertTrue(any("message_hash mismatch" in error for error in result.errors))
+
+    def test_mcp_proxy_capture_rejects_resigned_redaction_summary_tamper(self):
+        capture = build_mcp_proxy_capture(
+            load_mcp_proxy_events(MCP_PROXY),
+            agent=AGENT,
+            contract_hash=CONTRACT_HASH,
+            proxy_ref="mcp-proxy:trustai/local",
+            upstream_ref="mcp-server:aitrade/tools",
+            captured_at="2026-07-03T12:00:12Z",
+        )
+        tampered = copy.deepcopy(capture)
+        tampered["redaction_summary"]["redacted_field_count"] = 0
+        tampered["redaction_summary"]["redacted_paths"] = []
+        tampered["redaction_summary"]["redacted_paths_hash"] = content_hash([])
+        summary_body = without_keys(tampered["redaction_summary"], "summary_id")
+        tampered["redaction_summary"]["summary_id"] = content_hash(summary_body)
+        body = without_keys(tampered, "capture_id", "signatures")
+        tampered["capture_id"] = content_hash(body)
+        tampered["signatures"] = [sign_value({"capture_id": tampered["capture_id"], "mcp_proxy_capture": body})]
+
+        result = verify_mcp_proxy_capture(tampered)
+
+        self.assertFalse(result.ok)
+        self.assertFalse(any("capture_id" in error for error in result.errors), result.errors)
+        self.assertTrue(any("redaction_summary mismatch" in error for error in result.errors), result.errors)
 
     def test_mcp_proxy_capture_preserves_jsonrpc_error_response(self):
         events = load_mcp_proxy_events(MCP_PROXY)
@@ -338,9 +366,28 @@ class McpGatewayTests(unittest.TestCase):
             self.assertTrue(event_result.ok, event_result.errors)
             self.assertEqual("trustai.mcp-proxy-stdio-session/0.1", event_export["schema"])
             self.assertEqual(2, event_export["event_count"])
+            self.assertEqual(1, event_export["redaction_summary"]["redacted_field_count"])
+            self.assertEqual(["message[0].authorization"], event_export["redaction_summary"]["redacted_paths"])
             self.assertEqual("[REDACTED]", event_export["events"][0]["message"]["authorization"])
             self.assertEqual(_sha256_ref(messages), event_export["client_messages_artifact"]["sha256"])
             self.assertEqual(_sha256_ref(stdout_path), event_export["stdout_artifact"]["sha256"])
+            tampered_summary = copy.deepcopy(event_export)
+            tampered_summary["redaction_summary"]["redacted_field_count"] = 0
+            tampered_summary["redaction_summary"]["redacted_paths"] = []
+            tampered_summary["redaction_summary"]["redacted_paths_hash"] = content_hash([])
+            summary_body = without_keys(tampered_summary["redaction_summary"], "summary_id")
+            tampered_summary["redaction_summary"]["summary_id"] = content_hash(summary_body)
+            tampered_summary["export_id"] = content_hash(without_keys(tampered_summary, "export_id"))
+            tampered_summary_result = verify_mcp_stdio_proxy_event_export(
+                tampered_summary,
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+            self.assertFalse(tampered_summary_result.ok)
+            self.assertTrue(
+                any("redaction_summary mismatch" in error for error in tampered_summary_result.errors),
+                tampered_summary_result.errors,
+            )
             stdout_path.write_text(stdout_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
             tampered_event_result = verify_mcp_stdio_proxy_event_export(
                 event_export,

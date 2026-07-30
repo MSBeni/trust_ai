@@ -17,6 +17,7 @@ MCP_PROXY_CAPTURE_SCHEMA = "trustai.mcp-proxy-capture/0.1"
 MCP_PROXY_CAPTURE_ENTRY_TYPE = "mcp.proxy_capture.evidenced"
 MCP_PROXY_STDIO_SESSION_SCHEMA = "trustai.mcp-proxy-stdio-session/0.1"
 MCP_PROXY_EVENT_CHAIN_SCHEMA = "trustai.mcp-proxy-event-chain/0.1"
+MCP_REDACTION_SUMMARY_SCHEMA = "trustai.mcp-redaction-summary/0.1"
 MCP_PROXY_DIRECTIONS = {"client_to_server", "server_to_client"}
 JSONRPC_VERSION = "2.0"
 MCP_SENSITIVE_KEYS = {
@@ -164,6 +165,7 @@ def build_mcp_stdio_proxy_event_export(
         raw_events.append({"direction": "server_to_client", "timestamp": timestamp, "session_id": session_id, "message": response})
     event_records = build_mcp_proxy_event_chain(raw_events)
     redacted_events = [record["event"] for record in event_records]
+    redaction_summary = _mcp_redaction_summary([event["message"] for event in redacted_events])
     tool_calls = _tool_calls_from_proxy_records(
         event_records,
         session_id=session_id,
@@ -186,6 +188,7 @@ def build_mcp_stdio_proxy_event_export(
         "event_count": len(redacted_events),
         "tool_call_count": len(tool_calls),
         "event_chain_root": event_records[-1]["event_hash"],
+        "redaction_summary": redaction_summary,
         "stdout_sha256": "sha256:" + sha256(stdout_bytes).hexdigest(),
         "stdout_size_bytes": len(stdout_bytes),
         "stderr_sha256": "sha256:" + sha256(stderr_bytes).hexdigest(),
@@ -259,6 +262,11 @@ def verify_mcp_stdio_proxy_event_export(
             tool_call_count = None
         if tool_call_count is not None and export.get("tool_call_count") != tool_call_count:
             errors.append("MCP stdio proxy tool_call_count mismatch")
+    expected_redaction_summary = _mcp_redaction_summary(
+        [event.get("message") for event in events if isinstance(event, dict)]
+    )
+    if export.get("redaction_summary") != expected_redaction_summary:
+        errors.append("MCP stdio proxy redaction_summary mismatch")
     client_messages = [event.get("message") for event in events if isinstance(event, dict) and event.get("direction") == "client_to_server"]
     stdout_messages = [event.get("message") for event in events if isinstance(event, dict) and event.get("direction") == "server_to_client"]
     client_notification_count = sum(1 for message in client_messages if isinstance(message, dict) and not _jsonrpc_has_id(message))
@@ -415,6 +423,7 @@ def build_mcp_proxy_capture(
         contract_hash=contract_hash,
     )
     transcript_records = build_mcp_transcript_chain(tool_calls)
+    redaction_summary = _mcp_redaction_summary([record["event"]["message"] for record in event_records])
     body = {
         "schema": MCP_PROXY_CAPTURE_SCHEMA,
         "captured_at": captured_at or utc_now(),
@@ -426,6 +435,7 @@ def build_mcp_proxy_capture(
         "event_count": len(event_records),
         "tool_call_count": len(tool_calls),
         "event_chain_root": event_records[-1]["event_hash"],
+        "redaction_summary": redaction_summary,
         "transcript_root": transcript_records[-1]["transcript_root"],
         "events": event_records,
         "tool_calls": tool_calls,
@@ -541,6 +551,9 @@ def verify_mcp_proxy_capture(
 
         for index, event in enumerate(event_payloads):
             errors.extend(f"MCP proxy event record {index} {error}" for error in _redaction_errors(event.get("message")))
+        expected_redaction_summary = _mcp_redaction_summary([event.get("message") for event in event_payloads])
+        if capture.get("redaction_summary") != expected_redaction_summary:
+            errors.append("MCP proxy capture redaction_summary mismatch")
 
         artifact = capture.get("proxy_events_artifact")
         if artifact is not None:
@@ -614,6 +627,7 @@ def append_mcp_proxy_capture(
         "event_count": capture["event_count"],
         "tool_call_count": capture["tool_call_count"],
         "event_chain_root": capture["event_chain_root"],
+        "redaction_summary": capture.get("redaction_summary"),
         "transcript_root": capture["transcript_root"],
         "proxy_events_artifact": capture.get("proxy_events_artifact"),
         "event_hashes": [event["event_hash"] for event in capture["events"]],
@@ -979,6 +993,38 @@ def _redaction_errors(value: Any, path: str = "message") -> list[str]:
         for index, item in enumerate(value):
             errors.extend(_redaction_errors(item, f"{path}[{index}]"))
     return errors
+
+
+def _mcp_redaction_summary(messages: list[Any]) -> dict[str, Any]:
+    redacted_paths: list[str] = []
+    for index, message in enumerate(messages):
+        redacted_paths.extend(_redacted_field_paths(message, f"message[{index}]"))
+    redacted_paths = sorted(redacted_paths)
+    body = {
+        "schema": MCP_REDACTION_SUMMARY_SCHEMA,
+        "redacted_value": "[REDACTED]",
+        "message_count": len(messages),
+        "redacted_field_count": len(redacted_paths),
+        "redacted_paths": redacted_paths,
+        "redacted_paths_hash": content_hash(redacted_paths),
+        "redacted_messages_hash": content_hash(messages),
+    }
+    return {**body, "summary_id": content_hash(body)}
+
+
+def _redacted_field_paths(value: Any, path: str) -> list[str]:
+    paths: list[str] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            child_path = f"{path}.{key}"
+            if _is_sensitive_key(str(key)) and item == "[REDACTED]":
+                paths.append(child_path)
+            else:
+                paths.extend(_redacted_field_paths(item, child_path))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            paths.extend(_redacted_field_paths(item, f"{path}[{index}]"))
+    return paths
 
 
 def _mcp_artifact_path(path: Path) -> str:
