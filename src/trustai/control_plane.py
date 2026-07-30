@@ -7529,33 +7529,145 @@ class ControlPlane:
             for task in tasks
             if isinstance(task, dict)
         ]
-        by_owner: dict[str, int] = {}
-        by_authority_kind: dict[str, int] = {}
-        by_requirement: dict[str, int] = {}
-        for task in blocked_tasks:
-            owner = str(task.get("owner_hint") or "unassigned")
-            authority_kind = str(task.get("authority_kind") or "unknown")
-            requirement_id = str(task.get("requirement_id") or "unknown")
-            by_owner[owner] = by_owner.get(owner, 0) + 1
-            by_authority_kind[authority_kind] = by_authority_kind.get(authority_kind, 0) + 1
-            by_requirement[requirement_id] = by_requirement.get(requirement_id, 0) + 1
+        submitted_template = submission_body.get("submitted_template") if isinstance(submission_body.get("submitted_template"), dict) else {}
+        submitted_requests = submitted_template.get("requests") if isinstance(submitted_template.get("requests"), list) else []
+        submitted_tasks: list[dict[str, Any]] = []
+        for request in submitted_requests:
+            if not isinstance(request, dict):
+                continue
+            fulfillment = request.get("fulfillment") if isinstance(request.get("fulfillment"), dict) else {}
+            source_uri = str(fulfillment.get("source_uri") or "").strip()
+            source_counts = _source_uri_counts([fulfillment])
+            if source_counts["live"]:
+                source_uri_status = "live"
+            elif source_counts["placeholder"]:
+                source_uri_status = "placeholder"
+            else:
+                source_uri_status = "missing"
+            submitted_tasks.append(
+                {
+                    "task": fulfillment.get("task") or request.get("unit_ref") or request.get("collection_task_ref") or request.get("task_ref"),
+                    "task_ref": request.get("task_ref"),
+                    "unit_ref": request.get("unit_ref"),
+                    "collection_task_ref": request.get("collection_task_ref"),
+                    "requirement_id": request.get("requirement_id"),
+                    "authority_kind": request.get("authority_kind"),
+                    "owner_hint": request.get("owner_hint"),
+                    "source_uri": source_uri or None,
+                    "source_uri_status": source_uri_status,
+                    "snapshot_out": fulfillment.get("source_file") or request.get("suggested_artifact_path"),
+                }
+            )
+
+        def _counts_by(records: list[dict[str, Any]], field: str, default: str) -> dict[str, int]:
+            counts: dict[str, int] = {}
+            for record in records:
+                value = str(record.get(field) or default)
+                counts[value] = counts.get(value, 0) + 1
+            return dict(sorted(counts.items()))
+
+        by_owner = _counts_by(blocked_tasks, "owner_hint", "unassigned")
+        by_authority_kind = _counts_by(blocked_tasks, "authority_kind", "unknown")
+        by_requirement = _counts_by(blocked_tasks, "requirement_id", "unknown")
+        submitted_by_owner = _counts_by(submitted_tasks, "owner_hint", "unassigned")
+        submitted_by_authority_kind = _counts_by(submitted_tasks, "authority_kind", "unknown")
+        submitted_by_requirement = _counts_by(submitted_tasks, "requirement_id", "unknown")
         collection_status = summary.get("collection_status") or (collection_package.get("status") if collection_package else None)
         next_actions = collection_package.get("next_actions") if collection_package else []
         if not isinstance(next_actions, list):
             next_actions = []
         submission_status = submission_summary.get("submission_status") or (submission.get("status") if submission else None)
+        submission_ready_for_review = bool(
+            submission
+            and submission_status == "submitted"
+            and int(submission_summary.get("submitted_task_count") or 0) > 0
+            and int(submission_summary.get("submitted_placeholder_source_uri_count") or 0) == 0
+        )
         submission_review_status = submission_review_summary.get("review_status") or (
             submission_review.get("review_status") if submission_review else None
         )
+        submission_review_ready = bool(
+            submission_review
+            and submission_review_status == "ready-to-collect"
+            and int(submission_review_summary.get("blocked_task_count") or 0) == 0
+            and int(submission_review_summary.get("placeholder_source_uri_count") or 0) == 0
+        )
+        collection_package_ready = bool(
+            collection_package
+            and collection_status == "ready-to-collect"
+            and int(summary.get("blocked_task_count") or 0) == 0
+            and int(summary.get("placeholder_source_uri_count") or 0) == 0
+        )
+        latest_closure = closures[0] if closures else None
+        closure_ready = bool(
+            latest_closure
+            and latest_closure.get("closure_status") == "closed"
+            and int(latest_closure.get("blocked_task_count") or 0) == 0
+            and int(latest_closure.get("placeholder_source_uri_count") or 0) == 0
+            and int(latest_closure.get("non_production_readiness_task_count") or 0) == 0
+            and latest_closure.get("readiness_status") == "ready"
+        )
+        stage_statuses = [
+            {
+                "stage": "submission",
+                "present": submission is not None,
+                "ready": submission_ready_for_review,
+                "status": submission_status,
+                "task_count": int(submission_summary.get("submitted_task_count") or 0),
+                "ready_task_count": int(submission_summary.get("submitted_live_source_uri_count") or 0),
+                "blocked_task_count": int(submission_summary.get("submitted_placeholder_source_uri_count") or 0),
+                "placeholder_source_uri_count": int(submission_summary.get("submitted_placeholder_source_uri_count") or 0),
+                "live_source_uri_count": int(submission_summary.get("submitted_live_source_uri_count") or 0),
+            },
+            {
+                "stage": "submission-review",
+                "present": submission_review is not None,
+                "ready": submission_review_ready,
+                "status": submission_review_status,
+                "task_count": int(submission_review_summary.get("source_map_entry_count") or 0),
+                "ready_task_count": int(submission_review_summary.get("ready_task_count") or 0),
+                "blocked_task_count": int(submission_review_summary.get("blocked_task_count") or 0),
+                "placeholder_source_uri_count": int(submission_review_summary.get("placeholder_source_uri_count") or 0),
+                "live_source_uri_count": int(submission_review_summary.get("live_source_uri_count") or 0),
+            },
+            {
+                "stage": "collection-package",
+                "present": collection_package is not None,
+                "ready": collection_package_ready,
+                "status": collection_status,
+                "task_count": int(summary.get("task_count") or 0),
+                "ready_task_count": int(summary.get("ready_task_count") or 0),
+                "blocked_task_count": int(summary.get("blocked_task_count") or len(blocked_tasks)),
+                "placeholder_source_uri_count": int(summary.get("placeholder_source_uri_count") or 0),
+                "live_source_uri_count": int(summary.get("live_source_uri_count") or 0),
+            },
+            {
+                "stage": "closure",
+                "present": latest_closure is not None,
+                "ready": closure_ready,
+                "status": latest_closure.get("closure_status") if latest_closure else None,
+                "task_count": int((latest_closure or {}).get("task_count") or 0),
+                "ready_task_count": int((latest_closure or {}).get("closed_task_count") or 0),
+                "blocked_task_count": int((latest_closure or {}).get("blocked_task_count") or 0),
+                "placeholder_source_uri_count": int((latest_closure or {}).get("placeholder_source_uri_count") or 0),
+                "live_source_uri_count": int((latest_closure or {}).get("live_source_uri_count") or 0),
+            },
+        ]
+        current_stage = next((stage["stage"] for stage in stage_statuses if not stage["ready"]), "complete")
+        next_required_action_by_stage = {
+            "submission": "replace submitted production replacement placeholder source_uri values with live authority-owned source URIs",
+            "submission-review": "rerun submission review with live source URIs and no blocked tasks",
+            "collection-package": "collect source snapshots and intake receipts from the ready production replacement source map",
+            "closure": "rebuild the manifest and readiness report, then close production replacement tasks",
+            "complete": "append the production-ready manifest and closure to the roadmap evidence chain",
+        }
         return {
             "schema_version": SCHEMA_VERSION,
+            "stage_statuses": stage_statuses,
+            "current_stage": current_stage,
+            "next_required_action": next_required_action_by_stage[current_stage],
             "submission_present": submission is not None,
-            "submission_ready_for_review": bool(
-                submission
-                and submission_status == "submitted"
-                and int(submission_summary.get("submitted_task_count") or 0) > 0
-                and int(submission_summary.get("submitted_placeholder_source_uri_count") or 0) == 0
-            ),
+            "submission_ready_for_review": submission_ready_for_review,
             "submission_status": submission_status,
             "submission_artifact_id": submission.get("artifact_id") if submission else None,
             "submission_artifact_hash": submission.get("artifact_hash") if submission else None,
@@ -7563,15 +7675,14 @@ class ControlPlane:
             "submitted_live_source_uri_count": int(submission_summary.get("submitted_live_source_uri_count") or 0),
             "submitted_placeholder_source_uri_count": int(submission_summary.get("submitted_placeholder_source_uri_count") or 0),
             "submitted_task_refs": submitted_task_refs[:limit],
+            "submitted_tasks": submitted_tasks[:limit],
             "submitted_task_limit": limit,
             "submitted_task_total": len(submitted_task_refs),
+            "submitted_task_counts_by_owner": submitted_by_owner,
+            "submitted_task_counts_by_authority_kind": submitted_by_authority_kind,
+            "submitted_task_counts_by_requirement": submitted_by_requirement,
             "submission_review_present": submission_review is not None,
-            "submission_review_ready": bool(
-                submission_review
-                and submission_review_status == "ready-to-collect"
-                and int(submission_review_summary.get("blocked_task_count") or 0) == 0
-                and int(submission_review_summary.get("placeholder_source_uri_count") or 0) == 0
-            ),
+            "submission_review_ready": submission_review_ready,
             "submission_review_status": submission_review_status,
             "submission_review_artifact_id": submission_review.get("artifact_id") if submission_review else None,
             "submission_review_artifact_hash": submission_review.get("artifact_hash") if submission_review else None,
@@ -7581,12 +7692,7 @@ class ControlPlane:
             "submission_review_placeholder_source_uri_count": int(submission_review_summary.get("placeholder_source_uri_count") or 0),
             "submission_review_live_source_uri_count": int(submission_review_summary.get("live_source_uri_count") or 0),
             "collection_package_present": collection_package is not None,
-            "collection_package_ready": bool(
-                collection_package
-                and collection_status == "ready-to-collect"
-                and int(summary.get("blocked_task_count") or 0) == 0
-                and int(summary.get("placeholder_source_uri_count") or 0) == 0
-            ),
+            "collection_package_ready": collection_package_ready,
             "collection_status": collection_status,
             "artifact_id": collection_package.get("artifact_id") if collection_package else None,
             "artifact_hash": collection_package.get("artifact_hash") if collection_package else None,
@@ -7597,14 +7703,14 @@ class ControlPlane:
             "live_source_uri_count": int(summary.get("live_source_uri_count") or 0),
             "snapshot_dir": summary.get("snapshot_dir"),
             "intake_dir": summary.get("intake_dir"),
-            "blocked_task_counts_by_owner": dict(sorted(by_owner.items())),
-            "blocked_task_counts_by_authority_kind": dict(sorted(by_authority_kind.items())),
-            "blocked_task_counts_by_requirement": dict(sorted(by_requirement.items())),
+            "blocked_task_counts_by_owner": by_owner,
+            "blocked_task_counts_by_authority_kind": by_authority_kind,
+            "blocked_task_counts_by_requirement": by_requirement,
             "blocked_tasks": blocked_tasks[:limit],
             "blocked_task_limit": limit,
             "blocked_task_total": len(blocked_tasks),
             "next_actions": next_actions,
-            "latest_closure": closures[0] if closures else None,
+            "latest_closure": latest_closure,
         }
 
     def external_authority_gaps(
