@@ -1,3 +1,17 @@
+# TrustAI
+
+**Public preview: reference implementation, not a production trust service.**
+The repository is for evaluation, offline verification, and contributions. Its
+retained aitrade evidence is synthetic/reference material: coverage of an
+authority checklist is not proof that external services are operated or that a
+regulator, insurer, or customer has accepted a pack. The current production
+readiness result is `not-ready` (0 of 72 authority units production-usable).
+See [roadmap coverage](docs/architecture/roadmap-coverage.md), the
+[readiness report](examples/aitrade/external-evidence/retained-external-evidence-readiness.md),
+and [contributing](CONTRIBUTING.md) before relying on a claim or submitting a
+change. Security reports follow [SECURITY.md](SECURITY.md). Licensed under
+[Apache-2.0](LICENSE).
+
 TrustAI is a reference implementation of an agent trust layer: pre-registered
 verification contracts, tamper-evident evidence chains, signed large-log tamper stress reports, timestamped promotion
 gates, promotion status receipts, provider-aware local keyring verification, trust authority receipts, KMS/TSA provider attestations with retained artifact replay, trust authority KMS/HSM enforcement receipts, deployment manifests, Helm API/service/network policy validation receipts, Kubernetes release-state receipts, deployment image integrity receipts, BYOC operator/Object Lock attestations, BYOC/self-hosted production authority dossiers with NetworkPolicy admission evidence, EU data-plane residency and digital-sovereignty attestations, compliance production authority dossiers, collector topology manifests, collector service hardening attestations, runtime attestation,
@@ -66,8 +80,13 @@ The repository has two GitHub Actions workflows:
 
 The full local suite also verifies downstream receipt types that depend on the
 long generated artifact chain documented below. Generated `.trustai/` state,
-`artifacts/`, caches, and build outputs are intentionally ignored by Git. Retained external-evidence artifacts under `examples/aitrade/external-evidence/` include a complete retained coverage manifest, retained collected-source map, retained collection-run report, remaining collection plan, source-map template, gap report, readiness report, production-replacement lifecycle reports (plan, owner packets, owner-packet status, intake template, submission bundle, submitted template, submission review, remediation queue, remediation owner packets, remediation owner fulfillment template JSON/Markdown/CSV, remediation owner fulfillment review, remediation application, collection package, and closure). The CSV is the owner work queue for the 72 live-authority replacements and can be fed back through `external-evidence-production-replacement-submission --fulfillment-csv-file` after owners fill live authority metadata. They show 72/72 authority units covered by retained/reference evidence and zero remaining collection tasks, but readiness status is `not-ready`: 0 authority units are production-usable and 72 production replacement tasks remain blocked until live external authority URIs, snapshots, and intake receipts replace the retained fixtures.
+`artifacts/`, caches, and build outputs are intentionally ignored by Git. Retained external-evidence artifacts under `examples/aitrade/external-evidence/` include a complete retained coverage manifest, retained collected-source map, retained collection-run report, remaining collection plan, source-map template, gap report, readiness report, production-replacement lifecycle reports (plan, owner packets, owner-packet status, intake template, submission bundle, submitted template, submission review, remediation queue, remediation owner packets, remediation owner fulfillment template JSON/Markdown/CSV, remediation owner fulfillment review, remediation application, collection package, and closure). The CSV is the owner work queue for the 72 live-authority replacements and can be fed back through `external-evidence-production-replacement-remediation-owner-fulfillment-review --fulfillment-csv-file --filled-template-out` or `external-evidence-production-replacement-submission --fulfillment-csv-file` after owners fill live authority metadata. They show 72/72 authority units covered by retained/reference evidence and zero remaining collection tasks, but readiness status is `not-ready`: 0 authority units are production-usable and 72 production replacement tasks remain blocked until live external authority URIs, snapshots, and intake receipts replace the retained fixtures.
 ## Quick Start
+
+Clone this repository and install from its root with
+`python3.11 -m pip install -e .`. Do not use `pip install trustai` from
+PyPI for this preview; that name belongs to a different published project.
+Alternatively, run the commands below with `PYTHONPATH=src` set.
 
 From the repository root:
 

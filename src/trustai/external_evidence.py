@@ -5268,11 +5268,11 @@ def _external_evidence_production_replacement_remediation_owner_fulfillment_revi
         return [
             "Replace every TODO production-authority source_uri in the remediation owner fulfillment template with a live authority-owned URI.",
             "Regenerate this owner fulfillment review with --require-live-source-uris before applying the remediation to the production replacement submission.",
-            "After the owner fulfillment review is ready, apply the fulfillment file to external-evidence-production-replacement-submission and rerun the ready submission review.",
+            "After the owner fulfillment review is ready, apply the filled JSON template or CSV fulfillment file to external-evidence-production-replacement-submission and rerun the ready submission review.",
         ]
     if review_status == "ready-to-collect":
         return [
-            "Apply this reviewed fulfillment file to external-evidence-production-replacement-submission with --require-submitted-live-source-uris.",
+            "Apply this reviewed filled JSON template or CSV fulfillment file to external-evidence-production-replacement-submission with --require-submitted-live-source-uris.",
             "Regenerate external-evidence-production-replacement-submission-review with --require-ready.",
             "Run collection-package generation only after the production replacement submission review is ready to collect.",
         ]
@@ -5386,10 +5386,11 @@ def build_external_evidence_production_replacement_remediation_owner_fulfillment
         "blockers": blockers,
         "next_actions": _external_evidence_production_replacement_remediation_owner_fulfillment_review_next_actions(review_status, placeholder_count),
         "commands": {
-            "review_owner_fulfillment": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-live-source-uris --out <review.json> --fulfilled-source-map-out <fulfilled-source-map.json>",
-            "apply_to_submission": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <owner-fulfillment-template.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
+            "review_owner_fulfillment": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --fulfillment-csv-file <owner-fulfillment-template.csv> --filled-template-out <filled-owner-fulfillment-template.json> --require-live-source-uris --out <review.json> --fulfilled-source-map-out <fulfilled-source-map.json>",
+            "apply_to_submission": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <filled-owner-fulfillment-template.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
+            "apply_csv_to_submission": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-csv-file <owner-fulfillment-template.csv> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
             "review_after_apply": "python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --require-ready --out <review.json>",
-            "verify_ready_review": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review-verify <review.json> <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-ready",
+            "verify_ready_review": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review-verify <review.json> <filled-owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-ready",
         },
         "limitations": [
             "This review proves remediation owner fulfillment readiness before applying it to the production replacement submission; it does not collect authority evidence.",

@@ -2000,6 +2000,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             remediation_owner_fulfillment_template_filled_csv_path = tmp_path / "replacement-remediation-owner-fulfillment-template-filled.csv"
             csv_submission_path = tmp_path / "replacement-submission-from-csv.json"
             csv_submitted_template_path = tmp_path / "replacement-submitted-template-from-csv.json"
+            csv_remediation_owner_fulfillment_filled_template_path = tmp_path / "replacement-remediation-owner-fulfillment-template-filled.json"
+            csv_remediation_owner_fulfillment_review_path = tmp_path / "replacement-remediation-owner-fulfillment-review-from-csv.json"
+            csv_remediation_owner_fulfillment_review_source_map_path = tmp_path / "replacement-remediation-owner-fulfilled-source-map-from-csv.json"
             remediation_owner_fulfillment_review_path = tmp_path / "replacement-remediation-owner-fulfillment-review.json"
             remediation_owner_fulfillment_review_markdown_path = tmp_path / "replacement-remediation-owner-fulfillment-review.md"
             remediation_owner_fulfillment_review_source_map_path = tmp_path / "replacement-remediation-owner-fulfilled-source-map.json"
@@ -2423,6 +2426,69 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             csv_submitted_template = load_external_evidence_production_replacement_intake_template(csv_submitted_template_path)
             self.assertEqual(live_fulfillment["source_uri"], csv_submitted_template["fulfillments"][0]["source_uri"])
             self.assertEqual(live_fulfillment["source_uri"], csv_submitted_template["requests"][0]["fulfillment"]["source_uri"])
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-remediation-owner-fulfillment-review",
+                    str(remediation_owner_fulfillment_template_path),
+                    str(remediation_owner_packets_path),
+                    str(plan_all_path),
+                    "--fulfillment-csv-file",
+                    str(remediation_owner_fulfillment_template_filled_csv_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-live-source-uris",
+                    "--require-ready",
+                    "--generated-at",
+                    "2026-07-09T00:09:14Z",
+                    "--out",
+                    str(csv_remediation_owner_fulfillment_review_path),
+                    "--filled-template-out",
+                    str(csv_remediation_owner_fulfillment_filled_template_path),
+                    "--fulfilled-source-map-out",
+                    str(csv_remediation_owner_fulfillment_review_source_map_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            csv_remediation_owner_fulfillment_review = load_external_evidence_production_replacement_remediation_owner_fulfillment_review(
+                csv_remediation_owner_fulfillment_review_path
+            )
+            self.assertEqual("ready-to-collect", csv_remediation_owner_fulfillment_review["summary"]["review_status"])
+            self.assertEqual(1, csv_remediation_owner_fulfillment_review["summary"]["ready_task_count"])
+            self.assertEqual(0, csv_remediation_owner_fulfillment_review["summary"]["blocked_task_count"])
+            self.assertEqual(0, csv_remediation_owner_fulfillment_review["summary"]["placeholder_source_uri_count"])
+            csv_remediation_owner_fulfillment_filled_template = load_external_evidence_production_replacement_remediation_owner_fulfillment_template(
+                csv_remediation_owner_fulfillment_filled_template_path
+            )
+            self.assertEqual("ready-to-submit", csv_remediation_owner_fulfillment_filled_template["summary"]["template_status"])
+            self.assertEqual(0, csv_remediation_owner_fulfillment_filled_template["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(live_fulfillment["source_uri"], csv_remediation_owner_fulfillment_filled_template["fulfillments"][0]["source_uri"])
+            self.assertEqual(live_fulfillment["source_uri"], csv_remediation_owner_fulfillment_filled_template["requests"][0]["fulfillment"]["source_uri"])
+            self.assertEqual(
+                content_hash(without_keys(csv_remediation_owner_fulfillment_filled_template, "production_replacement_remediation_owner_fulfillment_template_id")),
+                csv_remediation_owner_fulfillment_filled_template["production_replacement_remediation_owner_fulfillment_template_id"],
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-remediation-owner-fulfillment-review-verify",
+                    str(csv_remediation_owner_fulfillment_review_path),
+                    str(csv_remediation_owner_fulfillment_filled_template_path),
+                    str(remediation_owner_packets_path),
+                    str(plan_all_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-live-source-uris",
+                    "--require-ready",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
             subprocess.run(
                 [
                     sys.executable,

@@ -481,8 +481,12 @@ preserving owner, requirement, authority, blocked reason, snapshot, intake, and
 replacement traceability under `requests`. Its `--csv` output is the
 spreadsheet-friendly owner work queue for replacing every retained/reference
 authority row and can be fed back through
-`external-evidence-production-replacement-submission --fulfillment-csv-file`
-after owners fill live authority metadata. It MUST contain the same task rows as
+`external-evidence-production-replacement-remediation-owner-fulfillment-review --fulfillment-csv-file --filled-template-out`
+or `external-evidence-production-replacement-submission --fulfillment-csv-file`
+after owners fill live authority metadata. The review command MUST write a
+stable filled JSON template when `--filled-template-out` is supplied, so the
+review can be independently verified and the filled template can be applied to
+the production replacement submission. The CSV MUST contain the same task rows as
 `fulfillments` plus owner, snapshot, intake, issuer, subject, and blocking-reason
 columns. `REPLACE_WITH_*`, `TODO:*`, and example-domain source URIs MUST count as
 placeholders.

@@ -1,6 +1,6 @@
 # External Evidence Production Replacement Remediation Owner Fulfillment Review
 
-- Review ID: `49444f0ea9ffde8c6b074f576d853ea56b53977ae3add9666041c2c35408b6ae`
+- Review ID: `c2f70861824c3f7dec24f22cad3bcb3d1e4b5c4b4a94aa9196073487dbdb47a4`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
 - Requests: 72
@@ -97,14 +97,15 @@
 
 - Replace every TODO production-authority source_uri in the remediation owner fulfillment template with a live authority-owned URI.
 - Regenerate this owner fulfillment review with --require-live-source-uris before applying the remediation to the production replacement submission.
-- After the owner fulfillment review is ready, apply the fulfillment file to external-evidence-production-replacement-submission and rerun the ready submission review.
+- After the owner fulfillment review is ready, apply the filled JSON template or CSV fulfillment file to external-evidence-production-replacement-submission and rerun the ready submission review.
 
 ## Commands
 
-- review_owner_fulfillment: `python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-live-source-uris --out <review.json> --fulfilled-source-map-out <fulfilled-source-map.json>`
-- apply_to_submission: `python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <owner-fulfillment-template.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>`
+- review_owner_fulfillment: `python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --fulfillment-csv-file <owner-fulfillment-template.csv> --filled-template-out <filled-owner-fulfillment-template.json> --require-live-source-uris --out <review.json> --fulfilled-source-map-out <fulfilled-source-map.json>`
+- apply_to_submission: `python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <filled-owner-fulfillment-template.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>`
+- apply_csv_to_submission: `python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-csv-file <owner-fulfillment-template.csv> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>`
 - review_after_apply: `python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --require-ready --out <review.json>`
-- verify_ready_review: `python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review-verify <review.json> <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-ready`
+- verify_ready_review: `python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review-verify <review.json> <filled-owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-ready`
 
 ## Limitations
 

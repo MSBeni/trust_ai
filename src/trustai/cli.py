@@ -1220,6 +1220,8 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY,
     SOURCE_MAP_FULFILLMENT_FIELDS,
     SOURCE_MAP_FULFILLMENT_TASK_KEYS,
+    _source_map_fulfillment_task_ref,
+    _source_map_source_uri_counts,
     build_external_evidence_source_snapshot,
     build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
@@ -17557,6 +17559,12 @@ def cmd_external_evidence_production_replacement_remediation_owner_fulfillment_r
         template = load_external_evidence_production_replacement_remediation_owner_fulfillment_template(args.template)
         packet_bundle = load_external_evidence_production_replacement_remediation_owner_packets(args.packet_bundle)
         plan = load_external_evidence_collection_plan(args.plan)
+        fulfillments = _load_source_map_fulfillments(args.fulfillment, args.fulfillment_file, args.fulfillment_csv_file)
+        template = _apply_source_map_fulfillments_to_document(
+            template,
+            fulfillments,
+            id_key="production_replacement_remediation_owner_fulfillment_template_id",
+        )
         review = build_external_evidence_production_replacement_remediation_owner_fulfillment_review(
             template,
             packet_bundle,
@@ -17593,6 +17601,9 @@ def cmd_external_evidence_production_replacement_remediation_owner_fulfillment_r
     if args.markdown:
         write_external_evidence_production_replacement_remediation_owner_fulfillment_review_markdown(args.markdown, review)
         print(f"external evidence production replacement remediation owner fulfillment review markdown: {args.markdown}")
+    if args.filled_template_out:
+        _write_json(args.filled_template_out, template)
+        print(f"external evidence production replacement remediation owner filled template: {args.filled_template_out}")
     if args.fulfilled_source_map_out:
         target = Path(args.fulfilled_source_map_out)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -18047,6 +18058,78 @@ def _load_source_map_fulfillments(values: list[str], files: list[str], csv_files
     for path in csv_files or []:
         fulfillments.extend(_load_source_map_fulfillment_csv(path))
     return fulfillments
+
+
+def _source_map_cli_entry_refs(entry: dict[str, Any]) -> set[str]:
+    return {
+        value
+        for key in SOURCE_MAP_FULFILLMENT_TASK_KEYS
+        for value in [str(entry.get(key) or "").strip()]
+        if value
+    }
+
+
+def _apply_source_map_fulfillments_to_document(document: dict[str, Any], fulfillments: list[dict[str, Any]], *, id_key: str | None = None) -> dict[str, Any]:
+    if not fulfillments:
+        return document
+    updated = json.loads(json.dumps(document, sort_keys=True))
+    rows = updated.get("fulfillments")
+    if not isinstance(rows, list):
+        raise ValueError("source map fulfillment overlay target must contain a fulfillments list")
+    requests = updated.get("requests")
+    if not isinstance(requests, list):
+        requests = []
+    applied_refs: set[str] = set()
+    for index, fulfillment in enumerate(fulfillments):
+        if not isinstance(fulfillment, dict):
+            raise ValueError(f"source map fulfillment overlay item {index} must be an object")
+        task_ref = _source_map_fulfillment_task_ref(fulfillment)
+        if not task_ref:
+            raise ValueError(f"source map fulfillment overlay item {index} is missing task reference")
+        matches = [row for row in rows if isinstance(row, dict) and task_ref in _source_map_cli_entry_refs(row)]
+        if not matches:
+            raise ValueError(f"source map fulfillment overlay task not found: {task_ref}")
+        if len(matches) > 1:
+            raise ValueError(f"source map fulfillment overlay task is ambiguous: {task_ref}")
+        row = matches[0]
+        canonical_ref = _source_map_fulfillment_task_ref(row) or task_ref
+        if canonical_ref in applied_refs:
+            raise ValueError(f"duplicate source map fulfillment overlay for task: {canonical_ref}")
+        applied_refs.add(canonical_ref)
+        for key, value in fulfillment.items():
+            if key in SOURCE_MAP_FULFILLMENT_TASK_KEYS:
+                continue
+            if key not in SOURCE_MAP_FULFILLMENT_FIELDS:
+                raise ValueError(f"unsupported source map fulfillment overlay key: {key}")
+            if key == "timeout_seconds":
+                try:
+                    timeout = float(value)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("source map fulfillment overlay timeout_seconds must be numeric") from exc
+                if timeout <= 0:
+                    raise ValueError("source map fulfillment overlay timeout_seconds must be positive")
+                row[key] = timeout
+            else:
+                text_value = str(value or "").strip()
+                if key in {"source_uri", "description"} and not text_value:
+                    raise ValueError(f"source map fulfillment overlay {key} is required")
+                row[key] = text_value
+        row_refs = _source_map_cli_entry_refs(row)
+        for request in requests:
+            if isinstance(request, dict) and row_refs.intersection(_source_map_cli_entry_refs(request)):
+                request["fulfillment"] = json.loads(json.dumps(row, sort_keys=True))
+    summary = updated.get("summary")
+    if isinstance(summary, dict):
+        counts = _source_map_source_uri_counts([row for row in rows if isinstance(row, dict)])
+        summary["placeholder_source_uri_count"] = counts["placeholder_source_uri_count"]
+        summary["live_source_uri_count"] = counts["live_source_uri_count"]
+        if "template_status" in summary:
+            summary["template_status"] = "blocked" if counts["placeholder_source_uri_count"] else ("ready-to-submit" if rows else "empty")
+    if id_key:
+        body = dict(updated)
+        body.pop(id_key, None)
+        updated[id_key] = content_hash(body)
+    return updated
 
 
 def cmd_external_evidence_source_map_fulfill(args: argparse.Namespace) -> int:
@@ -29530,6 +29613,9 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("template")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("packet_bundle")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("plan")
+    external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--fulfillment", action="append", default=[], help="task;source_uri=URI[;description=TEXT;issuer=TEXT;issued_at=RFC3339;expires_at=RFC3339]")
+    external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--fulfillment-file", action="append", default=[], help="JSON list or object with a fulfillments list of source-map metadata objects")
+    external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--fulfillment-csv-file", action="append", default=[], help="CSV rows from the remediation owner fulfillment work queue")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--root", default=".")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--require-live-source-uris", action="store_true")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--require-source-snapshots", action="store_true")
@@ -29541,6 +29627,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--generated-at")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--out", default="artifacts/external-evidence-production-replacement-remediation-owner-fulfillment-review.json")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-remediation-owner-fulfillment-review.md")
+    external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--filled-template-out", help="write the owner-filled remediation fulfillment template after applying inline, JSON, or CSV fulfillments")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.add_argument("--fulfilled-source-map-out")
     external_evidence_production_replacement_remediation_owner_fulfillment_review.set_defaults(func=cmd_external_evidence_production_replacement_remediation_owner_fulfillment_review)
 

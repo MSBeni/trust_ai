@@ -5,7 +5,7 @@
     "A packet can close only when the matching production replacement tasks disappear from a regenerated production replacement plan.",
     "Keep retained examples for demo verification, but do not treat them as production authority evidence."
   ],
-  "owner_packet_bundle_id": "b21ae5c60e94ccdee25e9a414d8f74a3e6067e42497db469572da5a85c5eb492",
+  "owner_packet_bundle_id": "a38eade80bdeebf68823cb8bcac4978e7799d29634da63699fa601ac635ca1c1",
   "packets": [
     {
       "authority_kinds": [
@@ -4073,8 +4073,8 @@
   "source_replacement_plan": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "replacement_plan_hash": "420657fdfc2112c15590f27050594c5d98483e0c909195ae23dc228f24d9f04b",
-    "replacement_plan_id": "381f356e3da60cf607cecee7145340fb1eb083105552d103a06a6aa7092f4e19",
+    "replacement_plan_hash": "ce53933eb120896f227198ced0135536b0d62735cf7e41b82b1801d5eee2f381",
+    "replacement_plan_id": "a9cc422192387749fcd9dc3e0b7e67288cdcfab7e4f6059c0ac64dda306e1d14",
     "replacement_status": "open",
     "schema": "trustai.external-evidence-production-replacement-plan/0.1"
   },

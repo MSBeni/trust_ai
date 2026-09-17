@@ -4,10 +4,11 @@
     "fulfilled production source map: source map contains 72 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
-    "apply_to_submission": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <owner-fulfillment-template.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
+    "apply_csv_to_submission": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-csv-file <owner-fulfillment-template.csv> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
+    "apply_to_submission": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <filled-owner-fulfillment-template.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
     "review_after_apply": "python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --require-ready --out <review.json>",
-    "review_owner_fulfillment": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-live-source-uris --out <review.json> --fulfilled-source-map-out <fulfilled-source-map.json>",
-    "verify_ready_review": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review-verify <review.json> <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-ready"
+    "review_owner_fulfillment": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review <owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --fulfillment-csv-file <owner-fulfillment-template.csv> --filled-template-out <filled-owner-fulfillment-template.json> --require-live-source-uris --out <review.json> --fulfilled-source-map-out <fulfilled-source-map.json>",
+    "verify_ready_review": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-review-verify <review.json> <filled-owner-fulfillment-template.json> <owner-packets.json> <plan-all.json> --require-ready"
   },
   "fulfilled_source_map": {
     "defaults": {},
@@ -2252,14 +2253,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "b7f39c45287280373ac31d4b8b5702f95982364086d1150f0e38a80b93d8978a",
+    "source_map_id": "ee91bf06deee195b006a5acafb61f90e5bd31487a4643981f4812376b925d2ed",
     "source_plan": {
-      "plan_hash": "0470fa929c70e08cf7204ecf6b0cc1f5004b3baaec7b3f89d968cd0425ad7c8c",
-      "plan_id": "4e991cfa1ade1e7fe48a5ebffc9e17254dbf85704abe48f9c26868613bc204fd",
+      "plan_hash": "292147faa9499dd1697b2ad0f9bf50cc7a6bdaf81e0238bfd458114b27d5ded6",
+      "plan_id": "263ba5be9ed22815c6b32d290970518a6bcd5243f63c433ce4a14a59f33870c7",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "d9fc56ea8dfe8988a85eee7216edc5aababedd0244fda6fc3c5d52df207e60a0",
-        "manifest_id": "7ac3b60e336c62b8bf23a91276d7f3dd5b34b42a5d4168764cbedb463dfa43ad",
+        "manifest_hash": "379ee559dbb260a23709e9284d827b4aeb1af9c2db760ecadaf9ef39e5f2ca15",
+        "manifest_id": "36a6036df556ca06123ab97653a9ffcdcdb1f6a6ae8c1a1d4e7342a78e40be0c",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -2285,27 +2286,27 @@
   "next_actions": [
     "Replace every TODO production-authority source_uri in the remediation owner fulfillment template with a live authority-owned URI.",
     "Regenerate this owner fulfillment review with --require-live-source-uris before applying the remediation to the production replacement submission.",
-    "After the owner fulfillment review is ready, apply the fulfillment file to external-evidence-production-replacement-submission and rerun the ready submission review."
+    "After the owner fulfillment review is ready, apply the filled JSON template or CSV fulfillment file to external-evidence-production-replacement-submission and rerun the ready submission review."
   ],
-  "production_replacement_remediation_owner_fulfillment_review_id": "49444f0ea9ffde8c6b074f576d853ea56b53977ae3add9666041c2c35408b6ae",
+  "production_replacement_remediation_owner_fulfillment_review_id": "c2f70861824c3f7dec24f22cad3bcb3d1e4b5c4b4a94aa9196073487dbdb47a4",
   "schema": "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "0470fa929c70e08cf7204ecf6b0cc1f5004b3baaec7b3f89d968cd0425ad7c8c",
-      "plan_id": "4e991cfa1ade1e7fe48a5ebffc9e17254dbf85704abe48f9c26868613bc204fd",
+      "plan_hash": "292147faa9499dd1697b2ad0f9bf50cc7a6bdaf81e0238bfd458114b27d5ded6",
+      "plan_id": "263ba5be9ed22815c6b32d290970518a6bcd5243f63c433ce4a14a59f33870c7",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "production_replacement_remediation_owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_remediation_owner_fulfillment_template_hash": "d1d054e4f995446f54648ba8671b6ea764df96402dee0c9910c301156cc5bf06",
-      "production_replacement_remediation_owner_fulfillment_template_id": "4220b459fedc01033141f94a85903e64f30fa53a2259ce1dd9efd6fda2e2bf1e",
+      "production_replacement_remediation_owner_fulfillment_template_hash": "e6f55c8059de75d8c86d7b0675349c104e62427ca727202011a7e03773131a7c",
+      "production_replacement_remediation_owner_fulfillment_template_id": "9373cf40cd4d879dd59cf869b5f46e5a37bc40ec9f454334bb1bca2023e6ac23",
       "schema": "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-template/0.1"
     },
     "production_replacement_remediation_owner_packets": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_remediation_owner_packet_bundle_hash": "6066f2e70d7fda9d8f3cf36ac5df134c17c46fce2d7b3ed82de5f374ac40b5f9",
-      "production_replacement_remediation_owner_packet_bundle_id": "7eaadc1cc33029218970d4d3f08f9f0006827f23cbf461370ea14e2081c69d7b",
+      "production_replacement_remediation_owner_packet_bundle_hash": "9f6b6c1b15ac3ce113544173b37f6e8d1a5f4fcac26d9a33283bac406785482a",
+      "production_replacement_remediation_owner_packet_bundle_id": "8ebb98f2f6b0fe9a209b4723ef7a16fc795700a5724562d69762b835e64da63c",
       "schema": "trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1"
     }
   },
