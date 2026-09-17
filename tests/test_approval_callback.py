@@ -258,7 +258,7 @@ class ApprovalCallbackTests(unittest.TestCase):
                 callback_url="http://127.0.0.1/v0/approval-callbacks/slack",
             )
             interaction = self._slack_interaction(request)
-            server = serve("127.0.0.1", 0, str(state_path), "approval-server")
+            server = serve("127.0.0.1", 0, str(state_path), "approval-server", input_dir=str(CONTRACT.parent))
             thread = threading.Thread(target=server.serve_forever, daemon=True)
             thread.start()
             host, port = server.server_address
@@ -271,7 +271,7 @@ class ApprovalCallbackTests(unittest.TestCase):
                         {
                             "approval_request": request,
                             "interaction": interaction,
-                            "contract_path": str(CONTRACT),
+                            "contract_path": CONTRACT.name,
                             "approved_at": "2026-07-03T13:00:00Z",
                         }
                     ),
@@ -316,13 +316,13 @@ class ApprovalCallbackTests(unittest.TestCase):
             form = {
                 "payload": json.dumps(interaction, separators=(",", ":")),
                 "approval_request": json.dumps(request, separators=(",", ":")),
-                "contract_path": str(CONTRACT),
+                "contract_path": CONTRACT.name,
                 "approved_at": "2026-07-03T13:00:00Z",
             }
             raw_body = urlencode(form).encode("utf-8")
             timestamp = str(int(time.time()))
             signature = self._slack_signature(secret, raw_body, timestamp)
-            server = serve("127.0.0.1", 0, str(state_path), "approval-server", slack_signing_secret=secret)
+            server = serve("127.0.0.1", 0, str(state_path), "approval-server", slack_signing_secret=secret, input_dir=str(CONTRACT.parent))
             thread = threading.Thread(target=server.serve_forever, daemon=True)
             thread.start()
             host, port = server.server_address
@@ -381,6 +381,7 @@ class ApprovalCallbackTests(unittest.TestCase):
                 "approval-server",
                 approval_request_store_path=str(store_path),
                 slack_signing_secret=secret,
+                input_dir=str(CONTRACT.parent),
             )
             thread = threading.Thread(target=server.serve_forever, daemon=True)
             thread.start()
@@ -390,7 +391,7 @@ class ApprovalCallbackTests(unittest.TestCase):
                 conn.request(
                     "POST",
                     "/v0/approval-requests/slack",
-                    body=json.dumps({"approval_request": request, "contract_path": str(CONTRACT)}),
+                    body=json.dumps({"approval_request": request, "contract_path": CONTRACT.name}),
                     headers={"Content-Type": "application/json"},
                 )
                 register_response = conn.getresponse()

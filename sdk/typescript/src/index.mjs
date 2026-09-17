@@ -112,7 +112,7 @@ export class TrustAIClient {
     if (!contractHash) {
       throw new Error("contractHash is required");
     }
-    if (!endpoint) {
+    if (typeof endpoint !== "string" || !endpoint) {
       throw new Error("endpoint is required");
     }
     if (typeof fetchImpl !== "function") {
@@ -120,7 +120,11 @@ export class TrustAIClient {
     }
     this.agent = JSON.parse(JSON.stringify(agent));
     this.contractHash = contractHash;
-    this.endpoint = endpoint.replace(/\/+$/, "");
+    let end = endpoint.length;
+    while (end > 0 && endpoint.charCodeAt(end - 1) === 47) {
+      end -= 1;
+    }
+    this.endpoint = endpoint.slice(0, end);
     this.riskClass = riskClass ?? agent.risk_class;
     this.schemaUrl = schemaUrl;
     this.timeoutMs = timeoutMs;

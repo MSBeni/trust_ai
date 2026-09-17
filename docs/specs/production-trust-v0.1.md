@@ -110,3 +110,9 @@ logs.
 This is the local reference for later network collectors, verifier services, and
 insurer APIs.
 
+The API accepts input filenames only from `--input-dir` (default: the state
+file's directory). Place proof packs, contracts, and other input files there,
+then pass their filenames, not paths, in HTTP requests. Symlinks cannot escape
+this directory; requests cannot select a different evidence-chain state file.
+The default bind address remains `127.0.0.1`.
+

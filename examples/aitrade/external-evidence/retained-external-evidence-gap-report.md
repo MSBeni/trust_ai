@@ -1,6 +1,6 @@
 # External Evidence Gap Report
 
-- Gap report ID: `e60f62b0fc07d61a757d2ccf5594c101185267e05cc43e678ca7b5b57ba5c902`
+- Gap report ID: `adff8b3c18a45a03d27e80e63f43fe42f3ffef46aa36d5106be2218dbf8ab4f8`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `complete`
 - Covered authority kinds: 72/72
