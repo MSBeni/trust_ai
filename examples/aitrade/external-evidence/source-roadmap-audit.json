@@ -1,5 +1,5 @@
 {
-  "audit_id": "05afc1a8fe206f505acf532c6d5ca32e2a8be3c80a3cba23cef7e0a90ffdff29",
+  "audit_id": "601cebb55991decbff34c4b8fd6da9234085c2a09873887e0ed6741969bab7af",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -399,7 +399,7 @@
         {
           "path": "src/trustai/server.py",
           "present": true,
-          "sha256": "sha256:d119c5fc52ac033bb26b1297add60434c1525bd58240c3415e2191ae138f7a28"
+          "sha256": "sha256:9ed68a4484c7ee13b0c6c59b9362c33159551febd60ad4b4f18eb13ba16b56a4"
         },
         {
           "path": "src/trustai/cli.py",
@@ -1256,7 +1256,7 @@
         {
           "path": "src/trustai/server.py",
           "present": true,
-          "sha256": "sha256:d119c5fc52ac033bb26b1297add60434c1525bd58240c3415e2191ae138f7a28"
+          "sha256": "sha256:9ed68a4484c7ee13b0c6c59b9362c33159551febd60ad4b4f18eb13ba16b56a4"
         },
         {
           "path": "src/trustai/cli.py",
@@ -1362,7 +1362,7 @@
         {
           "path": "src/trustai/server.py",
           "present": true,
-          "sha256": "sha256:d119c5fc52ac033bb26b1297add60434c1525bd58240c3415e2191ae138f7a28"
+          "sha256": "sha256:9ed68a4484c7ee13b0c6c59b9362c33159551febd60ad4b4f18eb13ba16b56a4"
         },
         {
           "path": "src/trustai/cli.py",
@@ -1710,7 +1710,7 @@
         {
           "path": "src/trustai/server.py",
           "present": true,
-          "sha256": "sha256:d119c5fc52ac033bb26b1297add60434c1525bd58240c3415e2191ae138f7a28"
+          "sha256": "sha256:9ed68a4484c7ee13b0c6c59b9362c33159551febd60ad4b4f18eb13ba16b56a4"
         },
         {
           "path": "src/trustai/cli.py",
@@ -2295,7 +2295,7 @@
         {
           "path": "src/trustai/server.py",
           "present": true,
-          "sha256": "sha256:d119c5fc52ac033bb26b1297add60434c1525bd58240c3415e2191ae138f7a28"
+          "sha256": "sha256:9ed68a4484c7ee13b0c6c59b9362c33159551febd60ad4b4f18eb13ba16b56a4"
         },
         {
           "path": "src/trustai/cli.py",
@@ -2406,7 +2406,7 @@
         {
           "path": "src/trustai/server.py",
           "present": true,
-          "sha256": "sha256:d119c5fc52ac033bb26b1297add60434c1525bd58240c3415e2191ae138f7a28"
+          "sha256": "sha256:9ed68a4484c7ee13b0c6c59b9362c33159551febd60ad4b4f18eb13ba16b56a4"
         },
         {
           "path": "src/trustai/cli.py",

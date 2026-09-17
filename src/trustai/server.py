@@ -48,12 +48,16 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             raise ValueError("input path must be a filename in the configured input directory")
         try:
             root = Path(self.input_dir).resolve(strict=True)
-            path = (root / value).resolve(strict=True)
+            for candidate in root.iterdir():
+                if candidate.name != value:
+                    continue
+                path = candidate.resolve(strict=True)
+                if path.parent != root or not path.is_file():
+                    raise ValueError("input path must be a file inside the configured input directory")
+                return path
         except (OSError, RuntimeError) as exc:
             raise ValueError("input file does not exist") from exc
-        if path.parent != root or not path.is_file():
-            raise ValueError("input path must be a file inside the configured input directory")
-        return path
+        raise ValueError("input file does not exist")
 
     def _json_response(self, status: int, value: Any) -> None:
         data = json.dumps(value, indent=2, sort_keys=True).encode("utf-8")
