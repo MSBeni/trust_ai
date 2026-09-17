@@ -2,6 +2,8 @@ import json
 import unittest
 from pathlib import Path
 
+from trustai.roadmap_audit import verify_roadmap_audit
+
 
 ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
@@ -12,6 +14,7 @@ ARCHITECTURE_NOTE = ROOT / "docs" / "architecture" / "phase-0.md"
 EXTERNAL_EVIDENCE_SPEC = ROOT / "docs" / "specs" / "external-evidence-manifest-v0.1.md"
 RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evidence.py"
 RETAINED_EVIDENCE_MANIFEST = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-manifest.json"
+RETAINED_ROADMAP_AUDIT = ROOT / "examples" / "aitrade" / "external-evidence" / "source-roadmap-audit.json"
 RETAINED_EVIDENCE_READINESS = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-readiness.json"
 PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-submission-review.json"
 PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-remediation-queue.json"
@@ -26,6 +29,11 @@ TESTS_INIT = ROOT / "tests" / "__init__.py"
 
 
 class RepositoryCiTests(unittest.TestCase):
+    def test_retained_roadmap_audit_tracks_source_files(self):
+        audit = json.loads(RETAINED_ROADMAP_AUDIT.read_text(encoding="utf-8"))
+        result = verify_roadmap_audit(audit, root=ROOT)
+        self.assertTrue(result.ok, result.errors)
+
     def test_python_ci_bootstraps_artifacts_before_smoke_tests(self):
         workflow = PYTHON_CI.read_text(encoding="utf-8")
 
