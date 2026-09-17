@@ -271,7 +271,7 @@ class ApprovalCallbackTests(unittest.TestCase):
                         {
                             "approval_request": request,
                             "interaction": interaction,
-                            "contract_path": str(CONTRACT),
+                            "contract_path": CONTRACT.name,
                             "approved_at": "2026-07-03T13:00:00Z",
                         }
                     ),
@@ -316,7 +316,7 @@ class ApprovalCallbackTests(unittest.TestCase):
             form = {
                 "payload": json.dumps(interaction, separators=(",", ":")),
                 "approval_request": json.dumps(request, separators=(",", ":")),
-                "contract_path": str(CONTRACT),
+                "contract_path": CONTRACT.name,
                 "approved_at": "2026-07-03T13:00:00Z",
             }
             raw_body = urlencode(form).encode("utf-8")
@@ -391,7 +391,7 @@ class ApprovalCallbackTests(unittest.TestCase):
                 conn.request(
                     "POST",
                     "/v0/approval-requests/slack",
-                    body=json.dumps({"approval_request": request, "contract_path": str(CONTRACT)}),
+                    body=json.dumps({"approval_request": request, "contract_path": CONTRACT.name}),
                     headers={"Content-Type": "application/json"},
                 )
                 register_response = conn.getresponse()

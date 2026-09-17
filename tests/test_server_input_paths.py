@@ -40,7 +40,7 @@ class ServerInputPathTests(unittest.TestCase):
                     ("/v0/control/index", {"production_replacement_closure_path": str(outside)}, "input path"),
                     ("/v0/control/index", {"production_replacement_closure_paths": [str(outside)]}, "input path"),
                     ("/v0/verify", {"path": str(outside)}, "input path"),
-                    ("/v0/verify", {"path": str(symlink)}, "input path"),
+                    ("/v0/verify", {"path": symlink.name}, "input path"),
                     ("/v0/verify", {"path": str(input_dir / ".." / "secret.json")}, "input path"),
                     (
                         "/v0/approval-requests/slack",
@@ -73,7 +73,7 @@ class ServerInputPathTests(unittest.TestCase):
                 conn.request(
                     "POST",
                     "/v0/verify",
-                    body=json.dumps({"path": str(allowed)}),
+                    body=json.dumps({"path": allowed.name}),
                     headers={"Content-Type": "application/json"},
                 )
                 response = conn.getresponse()

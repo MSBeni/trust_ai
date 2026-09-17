@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -43,14 +44,14 @@ class TrustAIHandler(BaseHTTPRequestHandler):
     input_dir = ".trustai/server"
 
     def _input_path(self, value: Any) -> Path:
-        if not isinstance(value, str) or not value or "\x00" in value:
-            raise ValueError("input path must be a non-empty string")
+        if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,255}", value):
+            raise ValueError("input path must be a filename in the configured input directory")
         try:
-            path = Path(value).resolve(strict=True)
             root = Path(self.input_dir).resolve(strict=True)
-        except OSError as exc:
-            raise ValueError("input path does not exist") from exc
-        if not path.is_relative_to(root) or not path.is_file():
+            path = (root / value).resolve(strict=True)
+        except (OSError, RuntimeError) as exc:
+            raise ValueError("input file does not exist") from exc
+        if path.parent != root or not path.is_file():
             raise ValueError("input path must be a file inside the configured input directory")
         return path
 
