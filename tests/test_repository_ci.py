@@ -106,12 +106,9 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("--production-replacement-worklist", cli)
         self.assertIn("--production-replacement-worklist-limit", cli)
         self.assertIn("production_replacement_worklist", cli)
-        readme = README.read_text(encoding="utf-8")
         coverage = (ROOT / "docs" / "architecture" / "roadmap-coverage.md").read_text(encoding="utf-8")
         retained_bootstrap = "--production-replacement-artifact examples/aitrade/external-evidence/retained-external-evidence-production-replacement-plan.json"
-        self.assertIn(retained_bootstrap, readme)
         self.assertIn(retained_bootstrap, coverage)
-        self.assertIn("--db .trustai/control-plane.sqlite --rebuild", readme)
         self.assertIn("--db .trustai/control-plane.sqlite --rebuild", coverage)
 
     def test_retained_evidence_guard_runs_before_worklist_verification(self):
@@ -173,8 +170,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("retained-external-evidence-production-replacement-fulfilled-source-map.json", script)
         self.assertTrue(TESTS_INIT.exists())
 
-    def test_readme_and_ci_retained_evidence_counts_match_manifest(self):
-        readme = README.read_text(encoding="utf-8")
+    def test_retained_evidence_and_ci_counts_match_manifest(self):
         workflow = PYTHON_CI.read_text(encoding="utf-8")
         manifest = json.loads(RETAINED_EVIDENCE_MANIFEST.read_text(encoding="utf-8"))
         readiness = json.loads(RETAINED_EVIDENCE_READINESS.read_text(encoding="utf-8"))
@@ -239,31 +235,18 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertEqual(required, production_closure_summary["blocked_task_count"])
         self.assertEqual(0, production_closure_summary["closed_task_count"])
         self.assertEqual(required, production_closure_summary["placeholder_source_uri_count"])
-        self.assertIn(f"{covered}/{required} authority units covered", readme)
-        self.assertIn("readiness status is `not-ready`", readme)
-        self.assertIn(f"{production_usable} authority units are production-usable", readme)
-        self.assertIn(f"{blocked_replacements} production replacement tasks remain blocked", readme)
-        self.assertIn("Strict production retained-evidence completion gate; expected to fail", readme)
-        self.assertIn("external-evidence-production-replacement-submission-verify", readme)
-        self.assertIn("external-evidence-production-replacement-submission-review-verify", readme)
-        self.assertIn("external-evidence-production-replacement-remediation-queue-verify", readme)
-        self.assertIn("external-evidence-production-replacement-remediation-owner-packets-verify", readme)
-        self.assertIn("external-evidence-production-replacement-remediation-owner-fulfillment-template-verify", readme)
-        self.assertIn("owner work queue", readme)
-        self.assertIn("--fulfillment-csv-file", readme)
-        self.assertIn("--filled-template-out", readme)
-        self.assertIn("external-evidence-production-replacement-remediation-owner-fulfillment-review-verify", readme)
-        self.assertIn("external-evidence-production-replacement-remediation-apply-verify", readme)
-        self.assertIn("external-evidence-production-replacement-collection-package-verify", readme)
-        self.assertIn("external-evidence-production-replacement-closure-verify", readme)
-        self.assertNotIn("zero non-production retained authority units", readme)
-        self.assertNotIn("expected to pass for the retained example set", readme)
-        self.assertIn(f"required_authority_kind_count'] == {required}", readme)
-        self.assertIn(f"missing_authority_kind_count'] == {required - 3}", readme)
         self.assertIn(f"required_authority_kind_count'] == {required}", workflow)
         self.assertIn(f"missing_authority_kind_count'] == {required - 3}", workflow)
         self.assertIn("external-evidence-production-replacement-remediation-apply-verify", workflow)
         self.assertIn("retained-external-evidence-production-replacement-remediation-applied-submission-review.json", workflow)
+
+    def test_readme_keeps_the_runnable_path_short(self):
+        readme = README.read_text(encoding="utf-8")
+        self.assertLess(len(readme.splitlines()), 120)
+        self.assertIn("python -m pip install -e .", readme)
+        self.assertIn("python -m trustai demo", readme)
+        self.assertIn("python -m trustai verify artifacts/aitrade-proof-pack.json", readme)
+        self.assertIn("docs/specs/proof-pack-v0.1.md", readme)
 
     def test_external_evidence_spec_documents_production_replacement_lifecycle(self):
         spec = EXTERNAL_EVIDENCE_SPEC.read_text(encoding="utf-8")

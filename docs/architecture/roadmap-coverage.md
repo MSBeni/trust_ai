@@ -643,7 +643,8 @@ python -m trustai tamper-stress-report --entries 1000000 --sample-index 0 --samp
 python -m trustai tamper-stress-verify artifacts/tamper-stress-report.json --deep --require-roadmap-target
 ```
 
-The full manual workflow is documented in `README.md`.
+The command examples above are the detailed manual workflow. For installation
+and a short proof-pack demo, see `README.md`.
 
 ## Still Deferred
 

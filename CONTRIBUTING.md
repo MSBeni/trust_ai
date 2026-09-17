@@ -1,10 +1,9 @@
 # Contributing
 
-TrustAI is a public reference preview. Contributions to the verifier, evidence
-formats, tests, documentation, and reproducible local workflows are welcome.
-Do not present retained example evidence as production authority or include
-customer data, credentials, private keys, or live access tokens in an issue,
-test, or pull request.
+Contributions to the verifier, evidence formats, tests, documentation, and
+reproducible local workflows are welcome. Use synthetic data in public examples;
+do not include customer data, credentials, private keys, or live access tokens
+in an issue, test, or pull request.
 
 ## Before a Pull Request
 
