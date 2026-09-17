@@ -22897,6 +22897,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
         github_webhook_secret=github_webhook_secret,
         gitlab_webhook_secret=gitlab_webhook_secret,
         provider_lifecycle_operation_token=provider_lifecycle_operation_token,
+        input_dir=args.input_dir,
     )
     host, port = httpd.server_address
     print(f"TrustAI API listening on http://{host}:{port}")
@@ -31249,6 +31250,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve_cmd.add_argument("--host", default="127.0.0.1")
     serve_cmd.add_argument("--port", type=int, default=8080)
     serve_cmd.add_argument("--control-db", default=".trustai/server/control-plane.sqlite")
+    serve_cmd.add_argument("--input-dir", help="directory containing files the HTTP API may read; defaults to the state file directory")
     serve_cmd.add_argument("--approval-request-store", default=".trustai/server/approval-requests.json")
     serve_cmd.add_argument("--provider-webhook-store", default=".trustai/server/provider-webhooks.json")
     serve_cmd.add_argument("--insurer-token")

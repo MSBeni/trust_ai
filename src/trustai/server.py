@@ -40,6 +40,19 @@ class TrustAIHandler(BaseHTTPRequestHandler):
     github_webhook_secret: str | None = None
     gitlab_webhook_secret: str | None = None
     provider_lifecycle_operation_token: str | None = None
+    input_dir = ".trustai/server"
+
+    def _input_path(self, value: Any) -> Path:
+        if not isinstance(value, str) or not value or "\x00" in value:
+            raise ValueError("input path must be a non-empty string")
+        try:
+            path = Path(value).resolve(strict=True)
+            root = Path(self.input_dir).resolve(strict=True)
+        except OSError as exc:
+            raise ValueError("input path does not exist") from exc
+        if not path.is_relative_to(root) or not path.is_file():
+            raise ValueError("input path must be a file inside the configured input directory")
+        return path
 
     def _json_response(self, status: int, value: Any) -> None:
         data = json.dumps(value, indent=2, sort_keys=True).encode("utf-8")
@@ -530,17 +543,20 @@ class TrustAIHandler(BaseHTTPRequestHandler):
 
         if parsed.path == "/v0/control/index":
             body = self._read_json()
-            chain = EvidenceChain.load(body.get("state_path", self.state_path), tenant_id=self.tenant_id)
             control = self._control()
             try:
+                if "state_path" in body and body["state_path"] != self.state_path:
+                    raise ValueError("state_path is server configured and cannot be overridden")
+                chain = EvidenceChain.load(self.state_path, tenant_id=self.tenant_id)
                 counts = control.rebuild_from_chain(chain) if body.get("rebuild") else control.index_chain(chain)
                 if body.get("proof_pack_path"):
-                    pack = load_proof_pack(body["proof_pack_path"])
+                    proof_pack_path = self._input_path(body["proof_pack_path"])
+                    pack = load_proof_pack(proof_pack_path)
                     result = verify_proof_pack(pack, key=self.signing_key)
                     if not result.ok:
                         self._json_response(422, {"ok": False, "errors": result.errors})
                         return
-                    control.index_proof_pack(pack, body["proof_pack_path"])
+                    control.index_proof_pack(pack, str(proof_pack_path))
                 artifact_paths = []
                 if body.get("production_replacement_artifact_path"):
                     artifact_paths.append(body["production_replacement_artifact_path"])
@@ -553,7 +569,7 @@ class TrustAIHandler(BaseHTTPRequestHandler):
                     self._json_response(422, {"ok": False, "error": "production_replacement_artifact_paths must be a string or list"})
                     return
                 for artifact_path in artifact_paths:
-                    artifact = json.loads(Path(str(artifact_path)).read_text(encoding="utf-8"))
+                    artifact = json.loads(self._input_path(artifact_path).read_text(encoding="utf-8"))
                     if artifact.get("schema") == EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA:
                         control.index_external_evidence_production_replacement_closure(artifact)
                         counts["external_evidence_production_replacement_closures"] = (
@@ -576,7 +592,7 @@ class TrustAIHandler(BaseHTTPRequestHandler):
                     self._json_response(422, {"ok": False, "error": "production_replacement_closure_paths must be a string or list"})
                     return
                 for closure_path in closure_paths:
-                    closure = load_external_evidence_production_replacement_closure(str(closure_path))
+                    closure = load_external_evidence_production_replacement_closure(self._input_path(closure_path))
                     control.index_external_evidence_production_replacement_closure(closure)
                     counts["external_evidence_production_replacement_lifecycle"] = (
                         counts.get("external_evidence_production_replacement_lifecycle", 0) + 1
@@ -585,6 +601,8 @@ class TrustAIHandler(BaseHTTPRequestHandler):
                         counts.get("external_evidence_production_replacement_closures", 0) + 1
                     )
                 self._json_response(200, {"ok": True, "indexed": counts, "summary": control.summary()})
+            except (OSError, ValueError, TypeError) as exc:
+                self._json_response(422, {"ok": False, "error": str(exc)})
             finally:
                 control.close()
             return
@@ -593,7 +611,11 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             body = self._read_json()
             proof_pack = body.get("proof_pack")
             if proof_pack is None and body.get("path"):
-                proof_pack = load_proof_pack(body["path"])
+                try:
+                    proof_pack = load_proof_pack(self._input_path(body["path"]))
+                except (OSError, ValueError) as exc:
+                    self._json_response(422, {"ok": False, "error": str(exc)})
+                    return
             result = verify_proof_pack(proof_pack, key=self.signing_key)
             self._json_response(
                 200 if result.ok else 422,
@@ -611,6 +633,7 @@ class TrustAIHandler(BaseHTTPRequestHandler):
                     self._json_response(422, {"ok": False, "error": "approval_request is required"})
                     return
                 if contract is None and contract_path:
+                    contract_path = str(self._input_path(contract_path))
                     load_contract(contract_path)
                 if contract is not None and not isinstance(contract, dict):
                     self._json_response(422, {"ok": False, "error": "contract must be an object"})
@@ -649,7 +672,11 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             contract = body.get("contract")
             request_source = "inline"
             if contract is None and body.get("contract_path"):
-                contract = load_contract(body["contract_path"])
+                try:
+                    contract = load_contract(self._input_path(body["contract_path"]))
+                except (OSError, ValueError) as exc:
+                    self._json_response(422, {"ok": False, "error": str(exc)})
+                    return
             if not isinstance(interaction, dict):
                 self._json_response(422, {"ok": False, "error": "interaction is required"})
                 return
@@ -787,7 +814,7 @@ class TrustAIHandler(BaseHTTPRequestHandler):
                     return
                 lifecycle = body.get("lifecycle") or body.get("lifecycle_manifest")
                 if lifecycle is None and body.get("lifecycle_path"):
-                    lifecycle = load_provider_lifecycle_manifest(body["lifecycle_path"])
+                    lifecycle = load_provider_lifecycle_manifest(self._input_path(body["lifecycle_path"]))
                 if not isinstance(lifecycle, dict):
                     self._json_response(422, {"ok": False, "error": "lifecycle or lifecycle_path is required"})
                     return
@@ -846,7 +873,11 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             body = self._read_json()
             proof_pack = body.get("proof_pack")
             if proof_pack is None and body.get("path"):
-                proof_pack = load_proof_pack(body["path"])
+                try:
+                    proof_pack = load_proof_pack(self._input_path(body["path"]))
+                except (OSError, ValueError) as exc:
+                    self._json_response(422, {"ok": False, "error": str(exc)})
+                    return
             result = verify_proof_pack(proof_pack, key=self.signing_key)
             if not result.ok:
                 self._json_response(422, {"ok": False, "errors": result.errors})
@@ -889,6 +920,7 @@ def serve(
     github_webhook_secret: str | None = None,
     gitlab_webhook_secret: str | None = None,
     provider_lifecycle_operation_token: str | None = None,
+    input_dir: str | None = None,
 ) -> ThreadingHTTPServer:
     class ConfiguredHandler(TrustAIHandler):
         pass
@@ -905,6 +937,7 @@ def serve(
     ConfiguredHandler.github_webhook_secret = github_webhook_secret
     ConfiguredHandler.gitlab_webhook_secret = gitlab_webhook_secret
     ConfiguredHandler.provider_lifecycle_operation_token = provider_lifecycle_operation_token
+    ConfiguredHandler.input_dir = input_dir or str(Path(state_path).parent)
     Path(state_path).parent.mkdir(parents=True, exist_ok=True)
     Path(control_db_path).parent.mkdir(parents=True, exist_ok=True)
     Path(approval_request_store_path).parent.mkdir(parents=True, exist_ok=True)

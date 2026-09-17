@@ -15,7 +15,7 @@
     "Regenerate the production replacement submission and submission review with strict live-source URI checks.",
     "Only collect source snapshots after this queue verifies with --require-empty against a ready submission review."
   ],
-  "production_replacement_remediation_queue_id": "a0d4ca682e3c703055a763970fa1d53f7dabe999bb58339b0d46ed5be1497c00",
+  "production_replacement_remediation_queue_id": "beb59121543ca2ff509a334269d679821c3bae39dc022de6e6a84b622a8d18aa",
   "remediation_items": [
     {
       "authority_kind": "identity-provider",
@@ -2474,8 +2474,8 @@
   "sources": {
     "production_replacement_submission_review": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_submission_review_hash": "a371afe5b254f23db336b82dc5b9f1b70182e221af0f44bc17704a1c44468938",
-      "production_replacement_submission_review_id": "d53c40a20963a6e1ec0934ef2d99403b5cca14732baf8e8e892365a92f11aee7",
+      "production_replacement_submission_review_hash": "ace77a355cd603b4ad17e60e9695417498011f22d7d2dd39a810f3e4f6ef56c0",
+      "production_replacement_submission_review_id": "af4f9e9ee676f4c0eaf005e374e7cacd251e2666c2878a093e41f90ecd784bbc",
       "schema": "trustai.external-evidence-production-replacement-submission-review/0.1"
     }
   },

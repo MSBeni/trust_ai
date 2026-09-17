@@ -13,6 +13,14 @@ const agent = {
 };
 const contractHash = "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2";
 
+test("strips trailing endpoint slashes in linear time", () => {
+  const base = "http://localhost:8080";
+  const client = new TrustAIClient({ agent, contractHash, endpoint: base + "/".repeat(100_000) });
+  assert.equal(client.endpoint, base);
+  const embedded = new TrustAIClient({ agent, contractHash, endpoint: base + "/".repeat(100_000) + "x" });
+  assert.equal(embedded.endpoint, base + "/".repeat(100_000) + "x");
+});
+
 test("normalizes TrustAI event shape", () => {
   const event = normalizeEvent({
     trace_id: "4F0C98CF84FA44DF9B8AD8F354D2F0A1",

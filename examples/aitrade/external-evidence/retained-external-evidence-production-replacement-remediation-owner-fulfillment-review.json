@@ -2253,14 +2253,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "33dc11f8b5e831c3fa89cf0ef8566da81d2578460922bce5c00c01dfd5d6957e",
+    "source_map_id": "02cc5a6c54b4af9ba6dda99ea56d15490bb82a5e278455befc928d2a4b7a7f6a",
     "source_plan": {
-      "plan_hash": "0de88ea8e12a0a5a026e3168d25e48ad976b9bd51153f82c893f7036d1001fd7",
-      "plan_id": "c6160517d89ec916e7d05c750cc5109a4a83a5c23ba4aeb6c49c2fa7e95c46c4",
+      "plan_hash": "4a2b15f08b0e51e9420565914ba18088c08b0115948b176aaa461162aca160a3",
+      "plan_id": "8408e5f8e127e59d70ff9af31933c1b890db2fbef0fe4aded7d236a873f6500d",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "3c330252b3cbf0de159fdf2512d6c05c28b887cf212acb3fd63334c0e04198f5",
-        "manifest_id": "dcc99393ea0fda591daa89c48fe0c596ad2deb879a11d28ac00b7a3fa079801c",
+        "manifest_hash": "d8e14ceaf0c7d0a3958657e2fdb8407ce3c5a9d4466583f3d0d9df39f710ef9d",
+        "manifest_id": "e479956653bbccb499aba4ba4a002532bf92ff6fafda94aae1022ebea75c7633",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -2288,25 +2288,25 @@
     "Regenerate this owner fulfillment review with --require-live-source-uris before applying the remediation to the production replacement submission.",
     "After the owner fulfillment review is ready, apply the filled JSON template or CSV fulfillment file to external-evidence-production-replacement-submission and rerun the ready submission review."
   ],
-  "production_replacement_remediation_owner_fulfillment_review_id": "1202e08eed8a54d350cb727193c8231709bf933874ae80945080d6842a9edce0",
+  "production_replacement_remediation_owner_fulfillment_review_id": "ab34155414ee395df732a233da1206cf398b9448292800d18ea61852c0abc112",
   "schema": "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "0de88ea8e12a0a5a026e3168d25e48ad976b9bd51153f82c893f7036d1001fd7",
-      "plan_id": "c6160517d89ec916e7d05c750cc5109a4a83a5c23ba4aeb6c49c2fa7e95c46c4",
+      "plan_hash": "4a2b15f08b0e51e9420565914ba18088c08b0115948b176aaa461162aca160a3",
+      "plan_id": "8408e5f8e127e59d70ff9af31933c1b890db2fbef0fe4aded7d236a873f6500d",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "production_replacement_remediation_owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_remediation_owner_fulfillment_template_hash": "cb14d092fd8a4efda0825f58c9850f04f588e968b0331dfe344a370ecbf31a86",
-      "production_replacement_remediation_owner_fulfillment_template_id": "446e9a68c3f2e82e1764d2751f1f09c1e511c0a899bc87e8e814030fed3e898a",
+      "production_replacement_remediation_owner_fulfillment_template_hash": "a25c0c20ca2f3933256dc51965acd2baa15da6890fd11a6480288657360be6e3",
+      "production_replacement_remediation_owner_fulfillment_template_id": "0fd55ccf1a3ef56ec531e75f047484c21b06d1b1ec9a32452b5fc9497f7bb5f0",
       "schema": "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-template/0.1"
     },
     "production_replacement_remediation_owner_packets": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_remediation_owner_packet_bundle_hash": "cb3eebaa341a83ce347a28294baa4a58f26e0ef87b08ad6304672cbbac0c2c03",
-      "production_replacement_remediation_owner_packet_bundle_id": "9717181c83ebfbc1ee1e8aeb18a0a8863681312f6d61b5102b6df07c4ff437cb",
+      "production_replacement_remediation_owner_packet_bundle_hash": "3bc6b15585a61ef2ca46d44e76d4f8503280dc5fd3ddea5855259936baf04742",
+      "production_replacement_remediation_owner_packet_bundle_id": "6f1a87f4e2a8fe963bba547d523d17a6d2cd98667800ceb69b24ab52d8f78fe9",
       "schema": "trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1"
     }
   },
