@@ -1,5 +1,5 @@
 {
-  "audit_id": "601cebb55991decbff34c4b8fd6da9234085c2a09873887e0ed6741969bab7af",
+  "audit_id": "256945ed4f59e7330e0551ee9431aacdf88227e35773b5b8b50f021448f8573c",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -1790,7 +1790,7 @@
         {
           "path": "tests/test_consent_insurer.py",
           "present": true,
-          "sha256": "sha256:fd815e98545100aa50104d35acec23ddda3443c783043f74a3a81d2b590a9047"
+          "sha256": "sha256:9e14a1a932834b7bcd8423cb5198afe5e55eecdf25ffc04fe5577a4ce2dce1b4"
         },
         {
           "path": "tests/test_control_plane.py",

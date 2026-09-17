@@ -127,7 +127,7 @@ class ConsentInsurerTests(unittest.TestCase):
             try:
                 body = json.dumps(
                     {
-                        "path": str(tmp / "pack.json"),
+                        "path": "pack.json",
                         "consent_id": consent["consent_id"],
                         "now": "2026-07-05T00:00:00Z",
                     }

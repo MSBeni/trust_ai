@@ -884,7 +884,7 @@
     "This template routes remediation fulfillments; it does not collect source snapshots, create intake receipts, or claim production readiness.",
     "Placeholder source URIs intentionally keep downstream production replacement review blocked until owners provide live authority sources."
   ],
-  "production_replacement_remediation_owner_fulfillment_template_id": "8c0600a8ec38e1873e8d197a34c271de4f3eb825c39ac5f65fa2664494fa7323",
+  "production_replacement_remediation_owner_fulfillment_template_id": "cdb0016c6e308e61850a5292050752148676a538332f1d1dcaed447d2f61bdd2",
   "requests": [
     {
       "authority_kind": "identity-provider",
@@ -3410,8 +3410,8 @@
   "schema": "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-template/0.1",
   "source_remediation_owner_packets": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "production_replacement_remediation_owner_packet_bundle_hash": "748cf9d8740ad39c11d4f5675ae7d94fcef1f1ff3b6ec361df17650567a3c95c",
-    "production_replacement_remediation_owner_packet_bundle_id": "eb8a652b903967a207156f4e7b7fa45a0db0b7ef1d9ab0c5d5c879bf0800e0a5",
+    "production_replacement_remediation_owner_packet_bundle_hash": "5cba1ec1b6919c9bbe45ede3122368495d5e9dd8fef18457e489c9d331ed11ea",
+    "production_replacement_remediation_owner_packet_bundle_id": "347b09ffa1dd795b8e7c3166439f140ca89957587435b4ae4ed282ff4ff4a5fa",
     "schema": "trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1"
   },
   "summary": {
